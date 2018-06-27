@@ -1,0 +1,66 @@
+{
+  "name": "bitmark-node",
+  "productName": "bitmark-node",
+  "version": "1.0.0",
+  "description": "Bitmark Node User Interface",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
+  },
+  "keywords": [
+    "bitmark",
+    "node",
+    "bitmark-node",
+    "docker",
+    "blockchain",
+    "ui"
+  ],
+  "author": "Zach Izzard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bitmark-inc/bitmark-node/issues"
+  },
+  "homepage": "https://github.com/bitmark-inc/bitmark-node#readme",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "electron_bitmark_node"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.20",
+    "@electron-forge/maker-deb": "^6.0.0-beta.20",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.20",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.20",
+    "@electron-forge/maker-zip": "^6.0.0-beta.20",
+    "electron": "2.0.3"
+  }
+}
