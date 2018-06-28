@@ -26,6 +26,9 @@ const createWindow = () => {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
+  //Add the menu specified in menu.js
+  require('./menu')
 };
 
 // This method will be called when Electron has finished
