@@ -96,103 +96,74 @@ const preferences = new ElectronPreferences({
      */
     'sections': [
         {
-            'id': 'about',
-            'label': 'About You',
-            /**
-             * See the list of available icons below.
-             */
-            'icon': 'single-01',
+            'id': 'blockchain',
+            'label': 'Blockchain Settings',
+            'icon': 'settings-gear-63',
+            'form': {
+                'groups': [
+                    {
+                        'label': 'Blockchain Settings',
+                        'fields': [
+                            {
+                                'heading': 'Blockchain Network',
+                                'content': "<p>The 'bitmark' blockchain is the offical version of the Bitmark blockchain.\
+                                               The 'testing' is a testnet version of the blockchain used for development testing.</p>",
+                                'type': 'message',
+                            },
+                            {
+                                'key': 'network',
+                                'type': 'radio',
+                                'options': [
+                                    {'label': 'Bitmark', 'value': 'bitmark'},
+                                    {'label': 'Testing', 'value': 'testing'},
+                                ],
+                                'help': 'Select which Blockchain you would like to use.'
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            'id': 'update',
+            'label': 'Update Settings',
+            'icon': 'square-download',
             'form': {
                 'groups': [
                     {
                         /**
                          * Group heading is optional.
                          */
-                        'label': 'About You',
+                        'label': 'Update Settings',
                         'fields': [
                             {
-                                'label': 'First Name',
-                                'key': 'first_name',
-                                'type': 'text',
-                                /**
-                                 * Optional text to be displayed beneath the field.
-                                 */
-                                'help': 'What is your first name?'
-                            },
-                            {
-                                'label': 'Last Name',
-                                'key': 'last_name',
-                                'type': 'text',
-                                'help': 'What is your last name?'
-                            },
-                            {
-                                'label': 'Gender',
-                                'key': 'gender',
-                                'type': 'dropdown',
+                                'label': 'How would you like to check for updates?',
+                                'key': 'auto_update',
+                                'type': 'radio',
                                 'options': [
-                                    {'label': 'Male', 'value': 'male'},
-                                    {'label': 'Female', 'value': 'female'},
-                                    {'label': 'Unspecified', 'value': 'unspecified'},
+                                    {'label': 'Automatically check for updates', 'value': 'true'},
+                                    {'label': 'Manually check for updates', 'value': 'false'},
                                 ],
-                                'help': 'What is your gender?'
                             },
-                            {
-                                'label': 'Which of the following foods do you like?',
-                                'key': 'foods',
-                                'type': 'checkbox',
-                                'options': [
-                                    { 'label': 'Ice Cream', 'value': 'ice_cream' },
-                                    { 'label': 'Carrots', 'value': 'carrots' },
-                                    { 'label': 'Cake', 'value': 'cake' },
-                                    { 'label': 'Spinach', 'value': 'spinach' }
-                                ],
-                                'help': 'Select one or more foods that you like.'
-                            },
-                            {
-                                'label': 'Coolness',
-                                'key': 'coolness',
-                                'type': 'slider',
-                                'min': 0,
-                                'max': 9001
-                            },
-                            {
-                                'label': 'Eye Color',
-                               'key': 'eye_color',
-                                'type': 'color',
-                                'format': 'hex', // can be hex, hsl or rgb
-                                'help': 'Your eye color'
-                            },
-                            {
-                                'label': 'Hair Color',
-                                'key': 'hair_color',
-                                'type': 'color',
-                                'format': 'rgb',
-                                'help': 'Your hair color'
-                            }
                         ]
                     }
                 ]
             }
         },
         {
-            'id': 'notes',
-            'label': 'Notes',
+            'id': 'directory',
+            'label': 'File Directory',
             'icon': 'folder-15',
             'form': {
                 'groups': [
                     {
-                        'label': 'Stuff',
+                        'label': 'File Directory',
                         'fields': [
                             {
-                                'label': 'Read notes from folder',
+                            	'label': 'Blockchain storage directory',
                                 'key': 'folder',
                                 'type': 'directory',
-                                'help': 'The location where your notes will be stored.'
-                            },
-                            {
-                                'heading': 'Important Message',
-                                'content': '<p>The quick brown fox jumps over the long white fence. The quick brown fox jumps over the long white fence. The quick brown fox jumps over the long white fence. The quick brown fox jumps over the long white fence.</p>',
-                                'type': 'message',
+                                'help': 'The location where the Bitmark Node container will store its data.'
                             }
                         ]
                     }
@@ -200,31 +171,34 @@ const preferences = new ElectronPreferences({
             }
         },
         {
-            'id': 'space',
-            'label': 'Other Settings',
-            'icon': 'spaceship',
+            'id': 'about',
+            'label': 'About',
+            'icon': 'badge-13',
             'form': {
                 'groups': [
                     {
-                        'label': 'Other Settings',
+                        'label': 'About Bitmark Node',
                         'fields': [
+                        	{
+                        	    'label': 'description',
+                        	    'heading': 'Description',
+                        	    'content': "<p>The Bitmark node software enables any computer on the Internet to join the Bitmark network as a fully-validating peer.\
+                        	                   The Bitmark blockchain is an independent chain, optimized for storing property titles, or bitmarks, and does not have its own internal currency (transaction fees are in bitcoin or litecoin).\
+                        	                   The peer-to-peer network is written in Go and uses the ZeroMQ distributed messaging library. Consensus is secured using the Argon2 hashing algorithm as proof-of-work.</p>",
+                        	    'type': 'message',
+                        	},
                             {
-                                'label': 'Phone Number',
-                                'key': 'phone_number',
-                                'type': 'text',
-                                'help': 'What is your phone number?'
+                                'label': 'container',
+                                'heading': 'Bitmark Node Docker Container',
+                                'content': "<p>https://hub.docker.com/r/bitmark/bitmark-node/</p>",
+                                'type': 'message',
                             },
                             {
-                                'label': "Foo or Bar?",
-                                'key': 'foobar',
-                                'type': 'radio',
-                                'options': [
-                                    {'label': 'Foo', 'value': 'foo'},
-                                    {'label': 'Bar', 'value': 'bar'},
-                                    {'label': 'FooBar', 'value': 'foobar'},
-                                ],
-                                'help': 'Foo? Bar?'
-                            }
+                                'label': 'electron',
+                                'heading': 'Electron',
+                                'content': "<p>https://electronjs.org/</p>",
+                                'type': 'message',
+                            },
                         ]
                     }
                 ]
