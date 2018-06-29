@@ -1,8 +1,12 @@
-const { app, BrowserWindow } = require('electron'); //Bitmark UI
-const {Menu} = require('electron') //Menu
-const path = require('path'); //Electron-Preferences
-const os = require('os'); //Electron-Preferences
-const ElectronPreferences = require('electron-preferences'); //Electron-Preferences
+const { app, BrowserWindow } = require('electron'); //Electron Default BrowserWindow - Used to display UI
+const {Menu} = require('electron'); //Electron Default Menu
+var userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
+const path = require('path'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
+const os = require('os'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
+const ElectronPreferences = require('electron-preferences'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
+const storage = require('electron-json-storage'); //Electron-JSON-Storage (https://github.com/electron-userland/electron-json-storage)
+const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
+const electron = require('electron');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -14,13 +18,11 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 let mainWindow;
 
 const createWindow = () => {
-  // Create the browser window.
+  // Create the browser window and load the bitmarkNode UI
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 800,
   });
-
-  // and load the index.html of the app.
   mainWindow.loadURL('http://localhost:9980');
 
   // Emitted when the window is closed.
@@ -57,19 +59,290 @@ app.on('activate', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-//Preferences - Currently not setup
+//Global variables to hold user preferences
+var network, auto_update, folder;
+
+//Get the location of the preferences directory and pass that to storage
+const prefDir = app.getPath('userData');
+storage.setDataPath(prefDir);
+
+//Get the location of the preferences file
+const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
+
+//Update global variables that hold user preference
+function updatePrefs(){
+	//Get the JSON file
+	storage.get('preferences', function(error, data) {
+	  if (error) throw error;
+
+	  //Update global variables
+	  network = data.blockchain.network;
+	  auto_update = data.update.auto_update;
+	  folder = data.directory.folder;
+	});
+}
+
+
+//Terminal Functions
+function startBitmarkNode(){
+	exec('docker start bitmarkNode', (err, stdout, stderr) => {
+	  if (err) {
+	    // node couldn't execute the command
+	    return;
+	  }
+
+	  // the *entire* stdout and stderr (buffered)
+	  console.log(`stdout: ${stdout}`);
+	  console.log(`stderr: ${stderr}`);
+	});
+}
+
+function stopBitmarkNode(){
+	exec('docker stop bitmarkNode', (err, stdout, stderr) => {
+	  if (err) {
+	    // node couldn't execute the command
+	    return;
+	  }
+
+	  // the *entire* stdout and stderr (buffered)
+	  console.log(`stdout: ${stdout}`);
+	  console.log(`stderr: ${stderr}`);
+	});
+}
+
+//Testing functions
+function printPrefs(){
+	console.log(network);
+	console.log(auto_update);
+	console.log(folder);
+}
+
+
+
+//Menu for UI
+const menuTemplate = [
+    {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Preferences',
+        accelerator: 'CmdOrCtrl+,',
+        click () { preferences.show(); }
+      },
+      {
+        role: 'quit'
+      }
+    ]
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      {
+        role: 'undo'
+      },
+      {
+        role: 'redo'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'cut'
+      },
+      {
+        role: 'copy'
+      },
+      {
+        role: 'paste'
+      },
+      {
+        role: 'pasteandmatchstyle'
+      },
+      {
+        role: 'delete'
+      },
+      {
+        role: 'selectall'
+      }
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      {
+        label: 'Reload',
+        accelerator: 'CmdOrCtrl+R',
+        click (item, focusedWindow) {
+          if (focusedWindow) focusedWindow.reload()
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'resetzoom'
+      },
+      {
+        role: 'zoomin'
+      },
+      {
+        role: 'zoomout'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'togglefullscreen'
+      }
+    ]
+  },
+  {
+    role: 'window',
+    submenu: [
+      {
+        role: 'minimize'
+      },
+      {
+        role: 'close'
+      }
+    ]
+  },
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'Learn More',
+        click () { require('electron').shell.openExternal('https://bitmark.com/tools-api/node') }
+      }
+    ]
+  },
+    {
+    label: 'Testing',
+    submenu: [
+    	{
+    	  label: 'Development Only'
+    	},
+    	{
+    	  type: 'separator'
+    	},
+  	{
+  	  label: 'Update Prefs',
+  	  accelerator: 'CmdOrCtrl+O',
+  	  click () { updatePrefs(); }
+  	},
+  	{
+  	  label: 'Print Prefs',
+  	  accelerator: 'CmdOrCtrl+P',
+  	  click () { printPrefs(); }
+  	},
+  	{
+  	  label: 'Start bitmarkNode',
+  	  accelerator: 'CmdOrCtrl+[',
+  	  click () { startBitmarkNode(); }
+  	},
+  	{
+  	  label: 'Stop bitmarkNode',
+  	  accelerator: 'CmdOrCtrl+]',
+  	  click () { stopBitmarkNode(); }
+  	}
+    ]
+  }
+]
+if (process.platform === 'darwin') {
+  const name = app.getName()
+  template.unshift({
+    label: name,
+    submenu: [
+      {
+        role: 'about'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'services',
+        submenu: []
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'hide'
+      },
+      {
+        role: 'hideothers'
+      },
+      {
+        role: 'unhide'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'quit'
+      }
+    ]
+  })
+  // Edit menu.
+  template[1].submenu.push(
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Speech',
+      submenu: [
+        {
+          role: 'startspeaking'
+        },
+        {
+          role: 'stopspeaking'
+        }
+      ]
+    }
+  )
+  // Window menu.
+  template[3].submenu = [
+    {
+      label: 'Close',
+      accelerator: 'CmdOrCtrl+W',
+      role: 'close'
+    },
+    {
+      label: 'Minimize',
+      accelerator: 'CmdOrCtrl+M',
+      role: 'minimize'
+    },
+    {
+      label: 'Zoom',
+      role: 'zoom'
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Bring All to Front',
+      role: 'front'
+    }
+  ]
+}
+
+//Add the menu from the template
+const menu = Menu.buildFromTemplate(menuTemplate)
+Menu.setApplicationMenu(menu)
+
+//Get the default data directory
+const dataDir = `${userHome}/bitmark-node-data`;
+
+//Preferences Menu
 const preferences = new ElectronPreferences({
     /**
      * Where should preferences be saved?
      */
-    'dataStore': path.resolve(app.getPath('userData'), 'preferences.json'),
+    'dataStore': prefLoc,
     /**
      * Default values.
      */
     'defaults': {
-        'notes': {
-            'folder': path.resolve(os.homedir(), 'Notes')
-        },
         'markdown': {
             'auto_format_links': true,
             'show_gutter': false
@@ -79,7 +352,16 @@ const preferences = new ElectronPreferences({
         },
         'drawer': {
             'show': true
-        }
+        },
+        "blockchain": {
+            "network": "bitmark"
+        },
+        "update": {
+            "auto_update": "true"
+        },
+        "directory": {
+            "folder": dataDir
+        },
     },
     /**
      * If the `onLoad` method is specified, this function will be called immediately after
@@ -206,183 +488,3 @@ const preferences = new ElectronPreferences({
         }
     ]
 });
-
-//Menu
-const menuTemplate = [
-    {
-    label: 'File',
-    submenu: [
-      {
-        label: 'Preferences',
-        accelerator: 'CmdOrCtrl+,',
-        click: () => preferences.show()
-      },
-      {
-        role: 'quit'
-      }
-    ]
-  },
-  {
-    label: 'Edit',
-    submenu: [
-      {
-        role: 'undo'
-      },
-      {
-        role: 'redo'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'cut'
-      },
-      {
-        role: 'copy'
-      },
-      {
-        role: 'paste'
-      },
-      {
-        role: 'pasteandmatchstyle'
-      },
-      {
-        role: 'delete'
-      },
-      {
-        role: 'selectall'
-      }
-    ]
-  },
-  {
-    label: 'View',
-    submenu: [
-      {
-        label: 'Reload',
-        accelerator: 'CmdOrCtrl+R',
-        click (item, focusedWindow) {
-          if (focusedWindow) focusedWindow.reload()
-        }
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'resetzoom'
-      },
-      {
-        role: 'zoomin'
-      },
-      {
-        role: 'zoomout'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'togglefullscreen'
-      }
-    ]
-  },
-  {
-    role: 'window',
-    submenu: [
-      {
-        role: 'minimize'
-      },
-      {
-        role: 'close'
-      }
-    ]
-  },
-  {
-    role: 'help',
-    submenu: [
-      {
-        label: 'Learn More',
-        click () { require('electron').shell.openExternal('https://bitmark.com/tools-api/node') }
-      }
-    ]
-  }
-]
-
-if (process.platform === 'darwin') {
-  const name = app.getName()
-  template.unshift({
-    label: name,
-    submenu: [
-      {
-        role: 'about'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'services',
-        submenu: []
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'hide'
-      },
-      {
-        role: 'hideothers'
-      },
-      {
-        role: 'unhide'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'quit'
-      }
-    ]
-  })
-  // Edit menu.
-  template[1].submenu.push(
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Speech',
-      submenu: [
-        {
-          role: 'startspeaking'
-        },
-        {
-          role: 'stopspeaking'
-        }
-      ]
-    }
-  )
-  // Window menu.
-  template[3].submenu = [
-    {
-      label: 'Close',
-      accelerator: 'CmdOrCtrl+W',
-      role: 'close'
-    },
-    {
-      label: 'Minimize',
-      accelerator: 'CmdOrCtrl+M',
-      role: 'minimize'
-    },
-    {
-      label: 'Zoom',
-      role: 'zoom'
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Bring All to Front',
-      role: 'front'
-    }
-  ]
-}
-
-const menu = Menu.buildFromTemplate(menuTemplate)
-Menu.setApplicationMenu(menu)
