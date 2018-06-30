@@ -4,8 +4,8 @@ const path = require('path'); //Electron-Preferences (https://github.com/tkamble
 const os = require('os'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const ElectronPreferences = require('electron-preferences'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const storage = require('electron-json-storage'); //Electron-JSON-Storage (https://github.com/electron-userland/electron-json-storage)
+const publicIp = require('public-ip'); //Public-IP - Used to get external IP address (https://github.com/sindresorhus/public-ip)
 const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
-const publicIp = require('public-ip'); //Public-IP - Used to get external IP address
 const electron = require('electron');
 
 var fs = require('fs'); //Used to check to see if directories exist/create ones
