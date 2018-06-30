@@ -1,12 +1,27 @@
 const { app, BrowserWindow } = require('electron'); //Electron Default BrowserWindow - Used to display UI
 const {Menu} = require('electron'); //Electron Default Menu
-var userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
 const path = require('path'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const os = require('os'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const ElectronPreferences = require('electron-preferences'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const storage = require('electron-json-storage'); //Electron-JSON-Storage (https://github.com/electron-userland/electron-json-storage)
 const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
+const publicIp = require('public-ip'); //Public-IP - Used to get external IP address
 const electron = require('electron');
+
+var fs = require('fs'); //Used to check to see if directories exist/create ones
+var userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
+
+//Global variables to hold user preferences and external IP address
+var network, auto_update, folder, public_IP;
+
+//Get the location of the preferences directory and pass that to storage
+const prefDir = app.getPath('userData');
+storage.setDataPath(prefDir);
+
+//Get the location of the preferences file
+const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
+
+
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -32,6 +47,16 @@ const createWindow = () => {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
+  //Get user preferences and update the IP address
+  updatePrefs();
+  getPublicIP();
+
+  //Pull update if auto_update is on
+  if(auto_update){
+    console.log("Checking for updates...");
+    pullUpdate();
+  }
 };
 
 // This method will be called when Electron has finished
@@ -59,16 +84,6 @@ app.on('activate', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-//Global variables to hold user preferences
-var network, auto_update, folder;
-
-//Get the location of the preferences directory and pass that to storage
-const prefDir = app.getPath('userData');
-storage.setDataPath(prefDir);
-
-//Get the location of the preferences file
-const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
-
 //Update global variables that hold user preference
 function updatePrefs(){
 	//Get the JSON file
@@ -80,14 +95,73 @@ function updatePrefs(){
 	  auto_update = data.update.auto_update;
 	  folder = data.directory.folder;
 	});
+};
+
+function getPublicIP(){
+	publicIp.v4().then(ip => {
+	  public_IP = ip;
+	});
+};
+
+//Change the network to bitmark
+function setNetworkBitmark(){
+	updatePrefs();
+	if(network === "testing"){
+		//Gets default JSON, inputs users defined variables for folder and auto_update, and changes the network to bitmark
+		storage.set('preferences', {"about": {},"blockchain": { "network": "bitmark" },"directory": { "folder": `${folder}`}, "drawer": { "show": true }, "markdown": { "auto_format_links": true, "show_gutter": false }, "preview": { "show": true }, "update": { "auto_update": `${auto_update}` } }, function(error){
+			if (error) throw error;
+			console.log("Changing to bitmark");
+			updatePrefs();
+		});
+	} else {
+		console.log("Already on bitmark");
+	}
+};
+
+//Change the network to testing
+function setNetworkTesting(){
+	updatePrefs();
+	if(network === "bitmark"){
+		//Gets default JSON, inputs users defined variables for folder and auto_update, and changes the network to testing
+		storage.set('preferences', {"about": {},"blockchain": { "network": "testing" },"directory": { "folder": `${folder}`}, "drawer": { "show": true }, "markdown": { "auto_format_links": true, "show_gutter": false }, "preview": { "show": true }, "update": { "auto_update": `${auto_update}` } }, function(error){
+			if (error) throw error;
+			console.log("Changing to testing");
+			updatePrefs();
+		});
+	} else {
+		console.log("Already on testing");
+	}
+};
+
+//Check to see if dir is defined and if not create it
+function directoryCheck(dir){
+	if (!fs.existsSync(dir)){
+	    fs.mkdirSync(dir);
+	    console.log(`The directory ${dir} does not exist. Creating it now...`);
+	}
+	console.log("The directory exists.")
+}
+
+//Check directories
+function directoryCheckHelper(){
+	bitmarknode = `${folder}/bitmark-node-data`;
+	db = `${bitmarknode}/db`;
+	data = `${bitmarknode}/data`;
+	datatest = `${bitmarknode}/data-test`;
+
+	directoryCheck(bitmarknode);
+	directoryCheck(db);
+	directoryCheck(data);
+	directoryCheck(datatest);
 }
 
 
 //Terminal Functions
 function startBitmarkNode(){
-	exec('docker start bitmarkNode', (err, stdout, stderr) => {
+	exec("docker start bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
+	    console.log("Error");
 	    return;
 	  }
 
@@ -95,12 +169,13 @@ function startBitmarkNode(){
 	  console.log(`stdout: ${stdout}`);
 	  console.log(`stderr: ${stderr}`);
 	});
-}
+};
 
 function stopBitmarkNode(){
-	exec('docker stop bitmarkNode', (err, stdout, stderr) => {
+	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
+	    console.log("Error");
 	    return;
 	  }
 
@@ -108,16 +183,109 @@ function stopBitmarkNode(){
 	  console.log(`stdout: ${stdout}`);
 	  console.log(`stderr: ${stderr}`);
 	});
-}
+};
+
+function removeBitmarkNode(){
+  exec("docker rm bitmarkNode", (err, stdout, stderr) => {
+    if (err) {
+      // node couldn't execute the command
+      console.log("Error");
+      return;
+    }
+
+    // the *entire* stdout and stderr (buffered)
+    console.log(`stdout: ${stdout}`);
+    console.log(`stderr: ${stderr}`);
+  });
+};
+
+function getContainerStatus(){
+	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
+	  if (err) {
+	    // node couldn't execute the command
+	    //console.log("Not setup");
+	    return null;
+	  }
+
+	  var str = stdout.toString();
+
+	  if(str){
+	  	console.log("Running");
+      return "Running";
+	  }else{
+	  	console.log("Stopped");
+      return "Stopped"
+	  }
+	});
+};
+
+function pullUpdate(){
+	exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
+	  if (err) {
+	    // node couldn't execute the command
+	    console.log("Error");
+	    return;
+	  }
+
+	  var str = stdout.toString();
+
+	  //Check to see if the up to date/updated text is present
+	  if(str.indexOf("Image is up to date for bitmark/bitmark-node:latest") !== -1){
+	  	console.log("No Updates");
+	  }
+	  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node:latest") !== -1){
+	  	console.log("Updated");
+	  }else{
+	  	console.log("Error");
+	  }
+	});
+};
+
+function getRunningNetwork(){
+	exec("docker exec bitmarkNode printenv NETWORK", (err, stdout, stderr) => {
+	  if (err) {
+	    // node couldn't execute the command
+	    console.log("Container not running");
+	    return;
+	  }
+
+    //Get network and remove whitespace
+	  var str = stdout.toString().trim();
+
+	  if(str === "bitmark"){
+	  	console.log("Bitmark");
+	  } else if (str === "testing"){
+	  	console.log("Testing");
+	  } else{
+	  	console.log("Network Error");
+	  }
+	});
+};
+
+//The command may have to be adjusted for the system (same with the folder)
+function createContainer(){
+	//Docker create container command (all on one line)
+	var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${public_IP} -e NETWORK=${network} -v ${folder}/bitmark-node-data/db:/.config/bitmark-node/db -v ${folder}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${folder}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
+	exec(command, (err, stdout, stderr) => {
+	  if (err) {
+	    // node couldn't execute the command
+	    console.log("Error");
+	    return;
+	  }
+
+	  // the *entire* stdout and stderr (buffered)
+	  console.log(`stdout: ${stdout}`);
+	  console.log(`stderr: ${stderr}`);
+	});
+};
 
 //Testing functions
 function printPrefs(){
 	console.log(network);
 	console.log(auto_update);
 	console.log(folder);
-}
-
-
+	console.log(public_IP);
+};
 
 //Menu for UI
 const menuTemplate = [
@@ -225,29 +393,63 @@ const menuTemplate = [
     	{
     	  type: 'separator'
     	},
-  	{
-  	  label: 'Update Prefs',
-  	  accelerator: 'CmdOrCtrl+O',
-  	  click () { updatePrefs(); }
-  	},
-  	{
-  	  label: 'Print Prefs',
-  	  accelerator: 'CmdOrCtrl+P',
-  	  click () { printPrefs(); }
-  	},
-  	{
-  	  label: 'Start bitmarkNode',
-  	  accelerator: 'CmdOrCtrl+[',
-  	  click () { startBitmarkNode(); }
-  	},
-  	{
-  	  label: 'Stop bitmarkNode',
-  	  accelerator: 'CmdOrCtrl+]',
-  	  click () { stopBitmarkNode(); }
-  	}
+	  	{
+	  	  label: 'Update Preferences',
+	  	  click () { updatePrefs(); }
+	  	},
+	  	{
+	  	  label: 'Print Parameters',
+	  	  click () { printPrefs(); }
+	  	},
+	  	{
+	  	  label: 'Start bitmarkNode',
+	  	  click () { startBitmarkNode(); }
+	  	},
+	  	{
+	  	  label: 'Stop bitmarkNode',
+	  	  click () { stopBitmarkNode(); }
+	  	},
+      {
+        label: 'Remove bitmarkNode',
+        click () { removeBitmarkNode(); }
+      },
+	  	{
+	  	  label: 'Get Container Status',
+	  	  click () { getContainerStatus(); }
+	  	},
+      {
+        label: 'Create Container',
+        click () { createContainer(); }
+      },
+      {
+        label: 'Check Directories',
+        click () { directoryCheckHelper(); }
+      },
+      {
+        label: 'Get Running Network',
+        click () { getRunningNetwork(); }
+      },
+	  	{
+	  	  label: 'Change to Bitmark',
+	  	  click () { setNetworkBitmark(); }
+	  	},
+	  	{
+	  	  label: 'Change to Testing',
+	  	  click () { setNetworkTesting(); }
+	  	},
+	  	{
+	  	  label: 'Pull Update',
+	  	  click () { pullUpdate(); }
+	  	},
+      {
+        label: 'Get IP Address',
+        click () { getPublicIP(); }
+      }
     ]
   }
 ]
+
+
 if (process.platform === 'darwin') {
   const name = app.getName()
   template.unshift({
@@ -331,7 +533,7 @@ const menu = Menu.buildFromTemplate(menuTemplate)
 Menu.setApplicationMenu(menu)
 
 //Get the default data directory
-const dataDir = `${userHome}/bitmark-node-data`;
+const dataDir = `${userHome}`;
 
 //Preferences Menu
 const preferences = new ElectronPreferences({
