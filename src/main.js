@@ -5,6 +5,7 @@ const os = require('os'); //Electron-Preferences (https://github.com/tkambler/el
 const ElectronPreferences = require('electron-preferences'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const storage = require('electron-json-storage'); //Electron-JSON-Storage (https://github.com/electron-userland/electron-json-storage)
 const publicIp = require('public-ip'); //Public-IP - Used to get external IP address (https://github.com/sindresorhus/public-ip)
+const notifier = require('node-notifier'); //Notifications (https://www.npmjs.com/package/node-notifier)
 const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
 const electron = require('electron');
 
@@ -165,9 +166,22 @@ function startBitmarkNode(){
 	    return;
 	  }
 
+	  //npm install --save node-notifier - still have to install (wasn't working earlier)
+	  /*notifier.notify(
+	  	{
+	  		title: "Bitmark Node",
+	  		message: "The Docker container has started.",
+	  		icon: path.join(__dirname, 'logo.png'),
+	  		sound: true,
+	  		wait: false
+	  	}
+	  );*/
+
+	  focusedWindow.reload()
+
 	  // the *entire* stdout and stderr (buffered)
-	  console.log(`stdout: ${stdout}`);
-	  console.log(`stderr: ${stderr}`);
+	  //console.log(`stdout: ${stdout}`);
+	  //console.log(`stderr: ${stderr}`);
 	});
 };
 
@@ -293,7 +307,7 @@ const menuTemplate = [
     label: 'File',
     submenu: [
       {
-        label: 'Preferences',
+        label: 'Prefer ences',
         accelerator: 'CmdOrCtrl+,',
         click () { preferences.show(); }
       },
