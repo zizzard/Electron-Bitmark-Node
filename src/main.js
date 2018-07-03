@@ -27,6 +27,14 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
+/* Thoughts / TODOs
+  + To swap the windows better have a bottom bar that allows you to swap between windows
+	+ Something like atom status bar (https://github.com/atom/status-bar)
+	+ Replace Send Feeback with swap to control panel
+  + Add full support for fleshed out scripts
+*/
+
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -36,9 +44,11 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 800,
+    title: "Bitmark Node UI"
   });
+  //mainWindow.loadURL(`file://${__dirname}/controller.html`);
   mainWindow.loadURL('http://localhost:9980');
-
+  
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
@@ -94,7 +104,15 @@ function newNotification(str){
 			wait: false
 		}
 	);
-}
+};
+
+function swapToController(){
+	mainWindow.loadURL(`file://${__dirname}/controller.html`);
+};
+
+function swapToBitmark(){
+	  mainWindow.loadURL('http://localhost:9980');
+};
 
 //Update global variables that hold user preference
 function updatePrefs(){
@@ -328,7 +346,7 @@ function createContainer(){
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
-	    newNotification("The Docker container failed to be created.");
+	    newNotification("The Docker container failed to be created. It may already exist.");
 	    return;
 	  }
 
@@ -446,36 +464,36 @@ const menuTemplate = [
     {
     label: 'Testing',
     submenu: [
-    	{
-    	  label: 'Development Only'
-    	},
-    	{
-    	  type: 'separator'
-    	},
-	  	{
-	  	  label: 'Update Preferences',
-	  	  click () { updatePrefs(); }
-	  	},
-	  	{
-	  	  label: 'Print Parameters',
-	  	  click () { printPrefs(); }
-	  	},
-	  	{
-	  	  label: 'Start bitmarkNode',
-	  	  click () { startBitmarkNode(); }
-	  	},
-	  	{
-	  	  label: 'Stop bitmarkNode',
-	  	  click () { stopBitmarkNode(); }
-	  	},
+      {
+    	label: 'Development Only'
+      },
+      {
+    	type: 'separator'
+      },
+	  {
+	  	label: 'Update Preferences',
+	  	click () { updatePrefs(); }
+	  },
+	  {
+	  	label: 'Print Parameters',
+	  	click () { printPrefs(); }
+	  },
+	  {
+	  	label: 'Start bitmarkNode',
+	  	click () { startBitmarkNode(); }
+	  },
+	  {
+	  	label: 'Stop bitmarkNode',
+	  	click () { stopBitmarkNode(); }
+	  },
       {
         label: 'Remove bitmarkNode',
         click () { removeBitmarkNode(); }
       },
-	  	{
-	  	  label: 'Get Container Status',
-	  	  click () { getContainerStatus(); }
-	  	},
+	  {
+	  	label: 'Get Container Status',
+	  	click () { getContainerStatus(); }
+	  },
       {
         label: 'Create Container',
         click () { createContainer(); }
@@ -488,22 +506,33 @@ const menuTemplate = [
         label: 'Get Running Network',
         click () { getRunningNetwork(); }
       },
-	  	{
-	  	  label: 'Change to Bitmark',
-	  	  click () { setNetworkBitmark(); }
-	  	},
-	  	{
-	  	  label: 'Change to Testing',
-	  	  click () { setNetworkTesting(); }
-	  	},
-	  	{
-	  	  label: 'Pull Update',
-	  	  click () { pullUpdate(); }
-	  	},
-      {
-        label: 'Get IP Address',
-        click () { getPublicIP(); }
-      }
+	  {
+	    label: 'Change to Bitmark',
+	    click () { setNetworkBitmark(); }
+	  },
+	  {
+	    label: 'Change to Testing',
+        click () { setNetworkTesting(); }
+  	  },
+	  {
+	    label: 'Pull Update',
+	    click () { pullUpdate(); }
+	  },
+	  {
+	    label: 'Get IP Address',
+	    click () { getPublicIP(); }
+	  },
+	  {
+	    type: 'separator'
+	  },
+	  {
+	  	label: 'Change Window to BitmarkNode',
+	  	click () { swapToBitmark(); }
+	  },
+	  {
+	  	label: 'Change Window to UI',
+	  	click () { swapToController(); }
+	  }
     ]
   }
 ]
