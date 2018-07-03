@@ -3,8 +3,8 @@
 Built using Electron (v2.0.3) and Electron-Forge (v6.0.0-beta.20)
 
 ## Prerequisite
-* npm
-* node.js
+* Node.js 10.3.0 or newer
+* npm 6.1.0 or newer
 
 ## Setup
 Install npm depedencies:
