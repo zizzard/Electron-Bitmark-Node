@@ -22,7 +22,6 @@ storage.setDataPath(prefDir);
 //Get the location of the preferences file
 const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
 
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
@@ -49,14 +48,11 @@ const createWindow = () => {
   });
 
   //Get user preferences and update the IP address
-  updatePrefs();
   getPublicIP();
+  updatePrefs();
 
-  //Pull update if auto_update is on
-  if(auto_update){
-    console.log("Checking for updates...");
-    pullUpdate();
-  }
+  //Check for check for updates if auto update is on after 2 seconds
+  setTimeout(autoUpdateCheck, 2000);
 };
 
 // This method will be called when Electron has finished
@@ -81,8 +77,24 @@ app.on('activate', () => {
   }
 });
 
+//When the program is ready, update preferences and check for updates
+app.on('activate', autoUpdateCheck);
+
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+//Display notification with str text
+function newNotification(str){
+	notifier.notify(
+		{
+			title: "Bitmark Node",
+			message: `${str}`,
+			icon: path.join(__dirname, 'logo.png'),
+			sound: true,
+			wait: false
+		}
+	);
+}
 
 //Update global variables that hold user preference
 function updatePrefs(){
@@ -97,10 +109,20 @@ function updatePrefs(){
 	});
 };
 
+// Get the users public ip
 function getPublicIP(){
 	publicIp.v4().then(ip => {
 	  public_IP = ip;
 	});
+};
+
+//Pull update if auto_update is on
+function autoUpdateCheck(){
+	updatePrefs();
+	if(auto_update == true){
+		console.log("Checking for updates with auto updater");
+		pullUpdate();
+	}
 };
 
 //Change the network to bitmark
@@ -111,28 +133,12 @@ function setNetworkBitmark(){
 		storage.set('preferences', {"about": {},"blockchain": { "network": "bitmark" },"directory": { "folder": `${folder}`}, "drawer": { "show": true }, "markdown": { "auto_format_links": true, "show_gutter": false }, "preview": { "show": true }, "update": { "auto_update": `${auto_update}` } }, function(error){
 			if (error) throw error;
 			console.log("Changing to bitmark");
-			notifier.notify(
-				{
-					title: "Bitmark Node",
-					message: "Changing the network to 'bitmark'.",
-					icon: path.join(__dirname, 'logo.png'),
-					sound: true,
-					wait: false
-				}
-			);
+			newNotification("Changing the network to 'bitmark'.");
 			updatePrefs();
 		});
 	} else {
 		console.log("Already on bitmark");
-		notifier.notify(
-			{
-				title: "Bitmark Node",
-				message: "The network is already set to 'bitmark'.",
-				icon: path.join(__dirname, 'logo.png'),
-				sound: true,
-				wait: false
-			}
-		);
+		newNotification("The network is already set to 'bitmark'.");
 	}
 };
 
@@ -144,28 +150,12 @@ function setNetworkTesting(){
 		storage.set('preferences', {"about": {},"blockchain": { "network": "testing" },"directory": { "folder": `${folder}`}, "drawer": { "show": true }, "markdown": { "auto_format_links": true, "show_gutter": false }, "preview": { "show": true }, "update": { "auto_update": `${auto_update}` } }, function(error){
 			if (error) throw error;
 			console.log("Changing to testing");
-			notifier.notify(
-				{
-					title: "Bitmark Node",
-					message: "Changing the network to 'testing'.",
-					icon: path.join(__dirname, 'logo.png'),
-					sound: true,
-					wait: false
-				}
-			);
+			newNotification("Changing the network to 'testing'.");
 			updatePrefs();
 		});
 	} else {
 		console.log("Already on testing");
-		notifier.notify(
-			{
-				title: "Bitmark Node",
-				message: "The network is already set to 'testing'.",
-				icon: path.join(__dirname, 'logo.png'),
-				sound: true,
-				wait: false
-			}
-		);
+		newNotification("The network is already set to 'testing'.");
 	}
 };
 
@@ -191,139 +181,71 @@ function directoryCheckHelper(){
 	directoryCheck(data);
 	directoryCheck(datatest);
 
-	notifier.notify(
-		{
-			title: "Bitmark Node",
-			message: "The neccessary directories were already setup or recently created.",
-			icon: path.join(__dirname, 'logo.png'),
-			sound: true,
-			wait: false
-		}
-	);
+	newNotification("The neccessary directories were already setup or recently created.");
 }
 
 
 //Terminal Functions
+
+// Start the bitmarkNode Docker container
 function startBitmarkNode(){
 	exec("docker start bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
-	    notifier.notify(
-	    	{
-	    		title: "Bitmark Node",
-	    		message: "The Docker container has failed to start.",
-	    		icon: path.join(__dirname, 'logo.png'),
-	    		sound: true,
-	    		wait: false
-	    	}
-	    );
+	    newNotification("The Docker container has failed to start.");
 	    return;
 	  }
 
-	  notifier.notify(
-	  	{
-	  		title: "Bitmark Node",
-	  		message: "The Docker container has started.",
-	  		icon: path.join(__dirname, 'logo.png'),
-	  		sound: true,
-	  		wait: false
-	  	}
-	  );
+	  newNotification("The Docker container has started.");
 
 	  console.log(`${stdout}`);
 	  mainWindow.reload();
 	});
 };
 
+// Stop the bitmarkNode Docker container
 function stopBitmarkNode(){
 	
-	notifier.notify(
-		{
-			title: "Bitmark Node",
-			message: "Stopping the Docker container... (This may take some time)",
-			icon: path.join(__dirname, 'logo.png'),
-			sound: true,
-			wait: false
-		}
-	);
+	newNotification("Stopping the Docker container... (This may take some time)");
 
 	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
-	    notifier.notify(
-	    	{
-	    		title: "Bitmark Node",
-	    		message: "The Docker container has failed to stop.",
-	    		icon: path.join(__dirname, 'logo.png'),
-	    		sound: true,
-	    		wait: false
-	    	}
-	    );
+	    newNotification("The Docker container has failed to stop.");
 	    return;
 	  }
 
-	  notifier.notify(
-	  	{
-	  		title: "Bitmark Node",
-	  		message: "The Docker container has stopped.",
-	  		icon: path.join(__dirname, 'logo.png'),
-	  		sound: true,
-	  		wait: false
-	  	}
-	  );
-
 	  console.log(`${stdout}`);
+	  newNotification("The Docker container has stopped.");
 	  mainWindow.reload();
 	});
 };
 
+// Remove the bitmarkNode Docker container
 function removeBitmarkNode(){
   exec("docker rm bitmarkNode", (err, stdout, stderr) => {
     if (err) {
       // node couldn't execute the command
       console.log("Error");
-      notifier.notify(
-      	{
-      		title: "Bitmark Node",
-      		message: "The Docker could not be removed.",
-      		icon: path.join(__dirname, 'logo.png'),
-      		sound: true,
-      		wait: false
-      	}
-      );
+      newNotification("The Docker could not be removed.");
       return;
     }
 
-    notifier.notify(
-    	{
-    		title: "Bitmark Node",
-    		message: "The Docker container has been removed.",
-    		icon: path.join(__dirname, 'logo.png'),
-    		sound: true,
-    		wait: false
-    	}
-    );
-
     console.log(`${stdout}`);
+    newNotification("The Docker container has been removed.");
+    
   });
 };
 
+// Get the bitmarkNode Docker container status (running, stopped, not setup)
 function getContainerStatus(){
 	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Not setup");
-	    notifier.notify(
-	    	{
-	    		title: "Bitmark Node",
-	    		message: "The Docker container is not setup.",
-	    		icon: path.join(__dirname, 'logo.png'),
-	    		sound: true,
-	    		wait: false
-	    	}
-	    );
+	    newNotification("The Docker container is not setup.");
 	    return;
 	  }
 
@@ -331,48 +253,26 @@ function getContainerStatus(){
 
 	  if(str){
 	  	console.log("Running");
-	  	notifier.notify(
-	  		{
-	  			title: "Bitmark Node",
-	  			message: "The Docker container is running.",
-	  			icon: path.join(__dirname, 'logo.png'),
-	  			sound: true,
-	  			wait: false
-	  		}
-	  	);
+	  	newNotification("The Docker container is running.");
       	return "Running";
 	  }else{
 	  	console.log("Stopped");
-	  	notifier.notify(
-	  		{
-	  			title: "Bitmark Node",
-	  			message: "The Docker container is stopped.",
-	  			icon: path.join(__dirname, 'logo.png'),
-	  			sound: true,
-	  			wait: false
-	  		}
-	  	);
+	  	newNotification("The Docker container is stopped.");
       	return "Stopped"
 	  }
 	});
 };
 
+// Check for updates from bitmark/bitmark-node
 function pullUpdate(){
 
-	notifier.notify(
-		{
-			title: "Bitmark Node",
-			message: "Checking for updates... (This may take some time)",
-			icon: path.join(__dirname, 'logo.png'),
-			sound: true,
-			wait: false
-		}
-	);
+	newNotification("Checking for updates... (This may take some time)");
 
 	exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
+	    newNotification("There was an error checking for an update. Please check your internet connection and restart Docker.");
 	    return;
 	  }
 
@@ -381,47 +281,25 @@ function pullUpdate(){
 	  //Check to see if the up to date/updated text is present
 	  if(str.indexOf("Image is up to date for bitmark/bitmark-node") !== -1){
 	  	console.log("No Updates");
-	  	notifier.notify(
-	  		{
-	  			title: "Bitmark Node",
-	  			message: "No updates to the Bitmark Node software have been found.",
-	  			icon: path.join(__dirname, 'logo.png'),
-	  			sound: true,
-	  			wait: false
-	  		}
-	  	);
+	  	newNotification("No updates to the Bitmark Node software have been found.");
 	  }
 	  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node") !== -1){
 	  	console.log("Updated");
-	  	notifier.notify(
-	  		{
-	  			title: "Bitmark Node",
-	  			message: "The Bitmark Node software has been updated.",
-	  			icon: path.join(__dirname, 'logo.png'),
-	  			sound: true,
-	  			wait: false
-	  		}
-	  	);
+	  	newNotification("The Bitmark Node software has been updated.");
 	  }else{
 	  	console.log("Error");
+	  	newNotification("There was an error checking for an update. Please check your internet connection and restart Docker.");
 	  }
 	});
 };
 
+// Get the current network
 function getRunningNetwork(){
 	exec("docker exec bitmarkNode printenv NETWORK", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Container not running");
-	    notifier.notify(
-	    	{
-	    		title: "Bitmark Node",
-	    		message: "The Docker container is not running.",
-	    		icon: path.join(__dirname, 'logo.png'),
-	    		sound: true,
-	    		wait: false
-	    	}
-	    );
+	    newNotification("The Docker container is not running.");
 	    return;
 	  }
 
@@ -430,42 +308,19 @@ function getRunningNetwork(){
 
 	  if(str === "bitmark"){
 	  	console.log("Bitmark");
-	  	notifier.notify(
-	  		{
-	  			title: "Bitmark Node",
-	  			message: "The Docker container is running the 'bitmark' blockchain.",
-	  			icon: path.join(__dirname, 'logo.png'),
-	  			sound: true,
-	  			wait: false
-	  		}
-	  	);
+	  	newNotification("The Docker container is running the 'bitmark' blockchain.");
 	  } else if (str === "testing"){
 	  	console.log("Testing");
-	  	notifier.notify(
-	  		{
-	  			title: "Bitmark Node",
-	  			message: "The Docker container is running the 'testing' blockchain.",
-	  			icon: path.join(__dirname, 'logo.png'),
-	  			sound: true,
-	  			wait: false
-	  		}
-	  	);
+	  	newNotification("The Docker container is running the 'testing' blockchain.");
 	  } else{
 	  	console.log("Network Error");
-	  	notifier.notify(
-	  		{
-	  			title: "Bitmark Node",
-	  			message: "The Docker container is running on an unknown blockchain.",
-	  			icon: path.join(__dirname, 'logo.png'),
-	  			sound: true,
-	  			wait: false
-	  		}
-	  	);
+	  	newNotification("The Docker container is running on an unknown blockchain.");
 	  }
 	});
 };
 
 //The command may have to be adjusted for the system (same with the folder)
+// Create the docker container
 function createContainer(){
 	//Docker create container command (all on one line)
 	var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${public_IP} -e NETWORK=${network} -v ${folder}/bitmark-node-data/db:/.config/bitmark-node/db -v ${folder}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${folder}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
@@ -473,28 +328,12 @@ function createContainer(){
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
-	    notifier.notify(
-	    	{
-	    		title: "Bitmark Node",
-	    		message: "The Docker container failed to be created.",
-	    		icon: path.join(__dirname, 'logo.png'),
-	    		sound: true,
-	    		wait: false
-	    	}
-	    );
+	    newNotification("The Docker container failed to be created.");
 	    return;
 	  }
 
-	  notifier.notify(
-	  	{
-	  		title: "Bitmark Node",
-	  		message: "The Docker container was created successfully.",
-	  		icon: path.join(__dirname, 'logo.png'),
-	  		sound: true,
-	  		wait: false
-	  	}
-	  );
 	  console.log(`${stdout}`);
+	  newNotification("The Docker container was created successfully.");
 	  mainWindow.reload();
 	});
 };
@@ -779,7 +618,7 @@ const preferences = new ElectronPreferences({
             "network": "bitmark"
         },
         "update": {
-            "auto_update": "true"
+            "auto_update": true
         },
         "directory": {
             "folder": dataDir
@@ -845,8 +684,8 @@ const preferences = new ElectronPreferences({
                                 'key': 'auto_update',
                                 'type': 'radio',
                                 'options': [
-                                    {'label': 'Automatically check for updates', 'value': 'true'},
-                                    {'label': 'Manually check for updates', 'value': 'false'},
+                                    {'label': 'Automatically check for updates', 'value': true},
+                                    {'label': 'Manually check for updates', 'value': false},
                                 ],
                             },
                         ]
