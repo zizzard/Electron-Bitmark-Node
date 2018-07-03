@@ -23,7 +23,6 @@ storage.setDataPath(prefDir);
 const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
 
 
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
@@ -112,10 +111,28 @@ function setNetworkBitmark(){
 		storage.set('preferences', {"about": {},"blockchain": { "network": "bitmark" },"directory": { "folder": `${folder}`}, "drawer": { "show": true }, "markdown": { "auto_format_links": true, "show_gutter": false }, "preview": { "show": true }, "update": { "auto_update": `${auto_update}` } }, function(error){
 			if (error) throw error;
 			console.log("Changing to bitmark");
+			notifier.notify(
+				{
+					title: "Bitmark Node",
+					message: "Changing the network to 'bitmark'.",
+					icon: path.join(__dirname, 'logo.png'),
+					sound: true,
+					wait: false
+				}
+			);
 			updatePrefs();
 		});
 	} else {
 		console.log("Already on bitmark");
+		notifier.notify(
+			{
+				title: "Bitmark Node",
+				message: "The network is already set to 'bitmark'.",
+				icon: path.join(__dirname, 'logo.png'),
+				sound: true,
+				wait: false
+			}
+		);
 	}
 };
 
@@ -127,10 +144,28 @@ function setNetworkTesting(){
 		storage.set('preferences', {"about": {},"blockchain": { "network": "testing" },"directory": { "folder": `${folder}`}, "drawer": { "show": true }, "markdown": { "auto_format_links": true, "show_gutter": false }, "preview": { "show": true }, "update": { "auto_update": `${auto_update}` } }, function(error){
 			if (error) throw error;
 			console.log("Changing to testing");
+			notifier.notify(
+				{
+					title: "Bitmark Node",
+					message: "Changing the network to 'testing'.",
+					icon: path.join(__dirname, 'logo.png'),
+					sound: true,
+					wait: false
+				}
+			);
 			updatePrefs();
 		});
 	} else {
 		console.log("Already on testing");
+		notifier.notify(
+			{
+				title: "Bitmark Node",
+				message: "The network is already set to 'testing'.",
+				icon: path.join(__dirname, 'logo.png'),
+				sound: true,
+				wait: false
+			}
+		);
 	}
 };
 
@@ -139,8 +174,9 @@ function directoryCheck(dir){
 	if (!fs.existsSync(dir)){
 	    fs.mkdirSync(dir);
 	    console.log(`The directory ${dir} does not exist. Creating it now...`);
+	}else{
+		console.log("The directory exists.")
 	}
-	console.log("The directory exists.")
 }
 
 //Check directories
@@ -154,6 +190,16 @@ function directoryCheckHelper(){
 	directoryCheck(db);
 	directoryCheck(data);
 	directoryCheck(datatest);
+
+	notifier.notify(
+		{
+			title: "Bitmark Node",
+			message: "The neccessary directories were already setup or recently created.",
+			icon: path.join(__dirname, 'logo.png'),
+			sound: true,
+			wait: false
+		}
+	);
 }
 
 
@@ -163,11 +209,19 @@ function startBitmarkNode(){
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
+	    notifier.notify(
+	    	{
+	    		title: "Bitmark Node",
+	    		message: "The Docker container has failed to start.",
+	    		icon: path.join(__dirname, 'logo.png'),
+	    		sound: true,
+	    		wait: false
+	    	}
+	    );
 	    return;
 	  }
 
-	  //npm install --save node-notifier - still have to install (wasn't working earlier)
-	  /*notifier.notify(
+	  notifier.notify(
 	  	{
 	  		title: "Bitmark Node",
 	  		message: "The Docker container has started.",
@@ -175,27 +229,53 @@ function startBitmarkNode(){
 	  		sound: true,
 	  		wait: false
 	  	}
-	  );*/
+	  );
 
-	  focusedWindow.reload()
-
-	  // the *entire* stdout and stderr (buffered)
-	  //console.log(`stdout: ${stdout}`);
-	  //console.log(`stderr: ${stderr}`);
+	  console.log(`${stdout}`);
+	  mainWindow.reload();
 	});
 };
 
 function stopBitmarkNode(){
+	
+	notifier.notify(
+		{
+			title: "Bitmark Node",
+			message: "Stopping the Docker container... (This may take some time)",
+			icon: path.join(__dirname, 'logo.png'),
+			sound: true,
+			wait: false
+		}
+	);
+
 	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
+	    notifier.notify(
+	    	{
+	    		title: "Bitmark Node",
+	    		message: "The Docker container has failed to stop.",
+	    		icon: path.join(__dirname, 'logo.png'),
+	    		sound: true,
+	    		wait: false
+	    	}
+	    );
 	    return;
 	  }
 
-	  // the *entire* stdout and stderr (buffered)
-	  console.log(`stdout: ${stdout}`);
-	  console.log(`stderr: ${stderr}`);
+	  notifier.notify(
+	  	{
+	  		title: "Bitmark Node",
+	  		message: "The Docker container has stopped.",
+	  		icon: path.join(__dirname, 'logo.png'),
+	  		sound: true,
+	  		wait: false
+	  	}
+	  );
+
+	  console.log(`${stdout}`);
+	  mainWindow.reload();
 	});
 };
 
@@ -204,12 +284,29 @@ function removeBitmarkNode(){
     if (err) {
       // node couldn't execute the command
       console.log("Error");
+      notifier.notify(
+      	{
+      		title: "Bitmark Node",
+      		message: "The Docker could not be removed.",
+      		icon: path.join(__dirname, 'logo.png'),
+      		sound: true,
+      		wait: false
+      	}
+      );
       return;
     }
 
-    // the *entire* stdout and stderr (buffered)
-    console.log(`stdout: ${stdout}`);
-    console.log(`stderr: ${stderr}`);
+    notifier.notify(
+    	{
+    		title: "Bitmark Node",
+    		message: "The Docker container has been removed.",
+    		icon: path.join(__dirname, 'logo.png'),
+    		sound: true,
+    		wait: false
+    	}
+    );
+
+    console.log(`${stdout}`);
   });
 };
 
@@ -217,23 +314,61 @@ function getContainerStatus(){
 	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
-	    //console.log("Not setup");
-	    return null;
+	    console.log("Not setup");
+	    notifier.notify(
+	    	{
+	    		title: "Bitmark Node",
+	    		message: "The Docker container is not setup.",
+	    		icon: path.join(__dirname, 'logo.png'),
+	    		sound: true,
+	    		wait: false
+	    	}
+	    );
+	    return;
 	  }
 
 	  var str = stdout.toString();
 
 	  if(str){
 	  	console.log("Running");
-      return "Running";
+	  	notifier.notify(
+	  		{
+	  			title: "Bitmark Node",
+	  			message: "The Docker container is running.",
+	  			icon: path.join(__dirname, 'logo.png'),
+	  			sound: true,
+	  			wait: false
+	  		}
+	  	);
+      	return "Running";
 	  }else{
 	  	console.log("Stopped");
-      return "Stopped"
+	  	notifier.notify(
+	  		{
+	  			title: "Bitmark Node",
+	  			message: "The Docker container is stopped.",
+	  			icon: path.join(__dirname, 'logo.png'),
+	  			sound: true,
+	  			wait: false
+	  		}
+	  	);
+      	return "Stopped"
 	  }
 	});
 };
 
 function pullUpdate(){
+
+	notifier.notify(
+		{
+			title: "Bitmark Node",
+			message: "Checking for updates... (This may take some time)",
+			icon: path.join(__dirname, 'logo.png'),
+			sound: true,
+			wait: false
+		}
+	);
+
 	exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
@@ -244,11 +379,29 @@ function pullUpdate(){
 	  var str = stdout.toString();
 
 	  //Check to see if the up to date/updated text is present
-	  if(str.indexOf("Image is up to date for bitmark/bitmark-node:latest") !== -1){
+	  if(str.indexOf("Image is up to date for bitmark/bitmark-node") !== -1){
 	  	console.log("No Updates");
+	  	notifier.notify(
+	  		{
+	  			title: "Bitmark Node",
+	  			message: "No updates to the Bitmark Node software have been found.",
+	  			icon: path.join(__dirname, 'logo.png'),
+	  			sound: true,
+	  			wait: false
+	  		}
+	  	);
 	  }
-	  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node:latest") !== -1){
+	  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node") !== -1){
 	  	console.log("Updated");
+	  	notifier.notify(
+	  		{
+	  			title: "Bitmark Node",
+	  			message: "The Bitmark Node software has been updated.",
+	  			icon: path.join(__dirname, 'logo.png'),
+	  			sound: true,
+	  			wait: false
+	  		}
+	  	);
 	  }else{
 	  	console.log("Error");
 	  }
@@ -260,6 +413,15 @@ function getRunningNetwork(){
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Container not running");
+	    notifier.notify(
+	    	{
+	    		title: "Bitmark Node",
+	    		message: "The Docker container is not running.",
+	    		icon: path.join(__dirname, 'logo.png'),
+	    		sound: true,
+	    		wait: false
+	    	}
+	    );
 	    return;
 	  }
 
@@ -268,10 +430,37 @@ function getRunningNetwork(){
 
 	  if(str === "bitmark"){
 	  	console.log("Bitmark");
+	  	notifier.notify(
+	  		{
+	  			title: "Bitmark Node",
+	  			message: "The Docker container is running the 'bitmark' blockchain.",
+	  			icon: path.join(__dirname, 'logo.png'),
+	  			sound: true,
+	  			wait: false
+	  		}
+	  	);
 	  } else if (str === "testing"){
 	  	console.log("Testing");
+	  	notifier.notify(
+	  		{
+	  			title: "Bitmark Node",
+	  			message: "The Docker container is running the 'testing' blockchain.",
+	  			icon: path.join(__dirname, 'logo.png'),
+	  			sound: true,
+	  			wait: false
+	  		}
+	  	);
 	  } else{
 	  	console.log("Network Error");
+	  	notifier.notify(
+	  		{
+	  			title: "Bitmark Node",
+	  			message: "The Docker container is running on an unknown blockchain.",
+	  			icon: path.join(__dirname, 'logo.png'),
+	  			sound: true,
+	  			wait: false
+	  		}
+	  	);
 	  }
 	});
 };
@@ -284,12 +473,29 @@ function createContainer(){
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Error");
+	    notifier.notify(
+	    	{
+	    		title: "Bitmark Node",
+	    		message: "The Docker container failed to be created.",
+	    		icon: path.join(__dirname, 'logo.png'),
+	    		sound: true,
+	    		wait: false
+	    	}
+	    );
 	    return;
 	  }
 
-	  // the *entire* stdout and stderr (buffered)
-	  console.log(`stdout: ${stdout}`);
-	  console.log(`stderr: ${stderr}`);
+	  notifier.notify(
+	  	{
+	  		title: "Bitmark Node",
+	  		message: "The Docker container was created successfully.",
+	  		icon: path.join(__dirname, 'logo.png'),
+	  		sound: true,
+	  		wait: false
+	  	}
+	  );
+	  console.log(`${stdout}`);
+	  mainWindow.reload();
 	});
 };
 
@@ -307,7 +513,7 @@ const menuTemplate = [
     label: 'File',
     submenu: [
       {
-        label: 'Prefer ences',
+        label: 'Preferences',
         accelerator: 'CmdOrCtrl+,',
         click () { preferences.show(); }
       },
