@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bitmark Node</title>
+    <script src="main.js"></script>
+    <style>
+
+      @font-face {
+           font-family: 'Avenir';
+           src: url('~@/assets/fonts/avenir/avenir.eot');
+           font-weight: normal;
+           font-style: normal;
+       }
+
+      /* The sidebar menu */
+      .sidenav {
+          height: 100%; /* Full-height: remove this if you want "auto" height */
+          width: 170px; /* Set the width of the sidebar */
+          position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+          z-index: 1; /* Stay on top */
+          top: 0; /* Stay at the top */
+          left: 0;
+          background-color: #F9F9F9; /* Light Grey */
+          border: solid #C1C1C1;
+          border-width: 0 1px;
+          overflow-x: hidden; /* Disable horizontal scroll */
+          padding-top: 20px;
+      }
+
+      /* The navigation menu links */
+      .sidenav a {
+          padding: 6px 8px 6px 16px;
+          text-decoration: none;
+          font-size: 16px;
+
+
+          color: #333333;
+          display: block;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="sidenav">
+      <a onClick="setup();" style="cursor: pointer; cursor: hand;">Create Container</a>
+      <a onClick="startBitmarkNode();" style="cursor: pointer; cursor: hand;">Start Container</a>
+      <a onClick="stopBitmarkNode();" style="cursor: pointer; cursor: hand;">Stop Container</a>
+      <a onClick="setNetworkBitmark();" style="cursor: pointer; cursor: hand;">Switch to Bitmark</a>
+      <a onClick="setNetworkTesting();" style="cursor: pointer; cursor: hand;">Switch to Testing</a>
+      <a onClick="pullUpdate();" style="cursor: pointer; cursor: hand;">Check for Updates</a>
+    </div>
+
+
+    <div class="main"> 
+        <iframe src="http://localhost:9980" style="position:fixed; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%; border:none; margin-left:170px; padding:0px; overflow:hidden;">
+    </iframe>
+     </div>
+  </body>
+</html>
+

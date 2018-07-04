@@ -7,6 +7,7 @@ const storage = require('electron-json-storage'); //Electron-JSON-Storage (https
 const publicIp = require('public-ip'); //Public-IP - Used to get external IP address (https://github.com/sindresorhus/public-ip)
 const notifier = require('node-notifier'); //Notifications (https://www.npmjs.com/package/node-notifier)
 const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
+const windowStateKeeper = require('electron-window-state'); //Electron-Window-State - Keep window state from instances of program (https://www.npmjs.com/package/electron-window-state)
 const electron = require('electron');
 
 var fs = require('fs'); //Used to check to see if directories exist/create ones
@@ -28,47 +29,59 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 }
 
 /* Thoughts / TODOs
-  + To swap the windows better have a bottom bar that allows you to swap between windows
-	+ Something like atom status bar (https://github.com/atom/status-bar)
-	+ Replace Send Feeback with swap to control panel
+  + Flesh out index.html
   + Add full support for fleshed out scripts
 */
-
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-const createWindow = () => {
-  // Create the browser window and load the bitmarkNode UI
-  mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 800,
-    title: "Bitmark Node UI"
-  });
-  //mainWindow.loadURL(`file://${__dirname}/controller.html`);
-  mainWindow.loadURL('http://localhost:9980');
-  
-  // Emitted when the window is closed.
-  mainWindow.on('closed', () => {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
-
-  //Get user preferences and update the IP address
-  getPublicIP();
-  updatePrefs();
-
-  //Check for check for updates if auto update is on after 2 seconds
-  setTimeout(autoUpdateCheck, 2000);
-};
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', function() {
+	// Load the previous state with fallback to defaults
+	let mainWindowState = windowStateKeeper({
+	  defaultWidth: 1000,
+	  defaultHeight: 800
+	});
+		
+	// Create the window using the state information
+	mainWindow = new BrowserWindow({
+		// Set window location and size as what is was on close
+		'x': mainWindowState.x,
+		'y': mainWindowState.y,
+		width: mainWindowState.width,
+		height: mainWindowState.height,
+		//Set the title
+		title: "Bitmark Node UI",
+		icon: path.join(__dirname, 'assets/icons/icon.png')
+	});
+
+	//Load the webpage
+	mainWindow.loadURL(`file://${__dirname}/index.html`);
+
+	// Emitted when the window is closed.
+	mainWindow.on('closed', () => {
+	  // Dereference the window object, usually you would store windows
+	  // in an array if your app supports multi windows, this is the time
+	  // when you should delete the corresponding element.
+	  mainWindow = null;
+	});
+
+	// Let us register listeners on the window, so we can update the state
+	// automatically (the listeners will be removed when the window is closed)
+	// and restore the maximized or full screen state
+	mainWindowState.manage(mainWindow);
+
+	//Get user preferences and update the IP address
+	getPublicIP();
+	updatePrefs();
+
+	//Check for check for updates if auto update is on after 2 seconds
+	setTimeout(autoUpdateCheck, 2000);
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -99,19 +112,11 @@ function newNotification(str){
 		{
 			title: "Bitmark Node",
 			message: `${str}`,
-			icon: path.join(__dirname, 'logo.png'),
+			icon: path.join(__dirname, 'assets/icons/icon.png'),
 			sound: true,
 			wait: false
 		}
 	);
-};
-
-function swapToController(){
-	mainWindow.loadURL(`file://${__dirname}/controller.html`);
-};
-
-function swapToBitmark(){
-	  mainWindow.loadURL('http://localhost:9980');
 };
 
 //Update global variables that hold user preference
@@ -356,6 +361,15 @@ function createContainer(){
 	});
 };
 
+function setup(){
+	getIP();
+	updatePrefs();
+	directoryCheckHelper();
+	stopBitmarkNode();
+	removeBitmarkNode();
+	createContainer();
+}
+
 //Testing functions
 function printPrefs(){
 	console.log(network);
@@ -524,14 +538,6 @@ const menuTemplate = [
 	  },
 	  {
 	    type: 'separator'
-	  },
-	  {
-	  	label: 'Change Window to BitmarkNode',
-	  	click () { swapToBitmark(); }
-	  },
-	  {
-	  	label: 'Change Window to UI',
-	  	click () { swapToController(); }
 	  }
     ]
   }
