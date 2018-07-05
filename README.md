@@ -18,3 +18,6 @@ To start the application, use:
 ## Build
 To build the application, use:
 ```electron-forge build```
+
+## Application Screenshot
+![alt text](readme_src/example.png)
