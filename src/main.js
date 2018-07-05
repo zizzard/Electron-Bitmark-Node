@@ -38,7 +38,7 @@ let mainWindow;
 app.on('ready', function() {
 	// Load the previous state with fallback to defaults
 	let mainWindowState = windowStateKeeper({
-	  defaultWidth: 1000,
+	  defaultWidth: 1200,
 	  defaultHeight: 800
 	});
 		
@@ -47,11 +47,12 @@ app.on('ready', function() {
 		// Set window location and size as what is was on close
 		'x': mainWindowState.x,
 		'y': mainWindowState.y,
-		width: mainWindowState.width,
-		height: mainWindowState.height,
+		width: 1200,//mainWindowState.width,
+		height: 800,//mainWindowState.height,
 		//Set the title
 		title: "Bitmark Node UI",
-		icon: path.join(__dirname, 'assets/icons/icon.png')
+		icon: path.join(__dirname, 'assets/icons/icon.png'),
+		resizable: false
 	});
 
 	//Load the webpage
