@@ -1,3 +1,14 @@
+/* TODO
+  1. Get networkSwitcher working
+  2. Fix bitmark logo text
+  3. Linux testing
+  4. Windows testing
+  5. MacOS testing
+  6. UI redesign
+    a. Remove top bar and make custom one to fit the theme of the sidebar
+    b. rework menu
+*/
+
 const { app, BrowserWindow } = require('electron'); //Electron Default BrowserWindow - Used to display UI
 const {Menu} = require('electron'); //Electron Default Menu
 const path = require('path'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
