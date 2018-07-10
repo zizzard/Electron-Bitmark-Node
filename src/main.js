@@ -9,7 +9,7 @@
     b. rework menu
 */
 
-const { app, BrowserWindow } = require('electron'); //Electron Default BrowserWindow - Used to display UI
+const {app, BrowserWindow} = require('electron'); //Electron Default BrowserWindow - Used to display UI
 const {Menu} = require('electron'); //Electron Default Menu
 const path = require('path'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const os = require('os'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
@@ -22,9 +22,6 @@ const electron = require('electron');
 
 var fs = require('fs'); //Used to check to see if directories exist/create ones
 var userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
-
-//Global variables to hold user preferences and external IP address
-var network, auto_update, folder, public_IP;
 
 //Get the location of the preferences file
 const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
@@ -60,7 +57,7 @@ app.on('ready', function() {
 		width: 1200,//mainWindowState.width,
 		height: 800,//mainWindowState.height,
 		//Set the title
-		title: "Bitmark Node UI",
+		title: "Bitmark Node User Interface",
 		icon: path.join(__dirname, 'assets/icons/icon.png')
 	});
 
@@ -101,9 +98,6 @@ app.on('activate', () => {
   }
 });
 
-//When the program is ready, update preferences and check for updates
-app.on('activate', autoUpdateCheck);
-
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
@@ -124,6 +118,7 @@ function newNotification(str){
 
 //Pull update if auto_update is on
 function autoUpdateCheck(){
+	const auto_update = preferences.value('update.auto_update');
 	if(auto_update == true){
 		console.log("Checking for updates with auto updater");
 		pullUpdate();
@@ -159,7 +154,7 @@ function startBitmarkNode(){
 	exec("docker start bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
-	    console.log("Error");
+	    console.log("Failed to start container");
 	    newNotification("The Docker container has failed to start.");
 	    return;
 	  }
@@ -179,7 +174,7 @@ function stopBitmarkNode(){
 	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
-	    console.log("Error");
+	    console.log("Failed to stop container");
 	    newNotification("The Docker container has failed to stop.");
 	    return;
 	  }
@@ -201,26 +196,52 @@ function createContainerHelper(){
 	});
 }
 
+// Create the container with the network and directory given
+function createContainerHelperIPOnly(net, dir){
+	publicIp.v4().then(ip => {
+	  createContainer(ip, net, dir);
+	});
+}
+
 //The command may have to be adjusted for the system (same with the folder)
 // Create the docker container
 function createContainer(ip, net, dir){
 
-	directoryCheckHelper();
-	
-	var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
+	directoryCheckHelper(dir);
 
-	exec(command, (err, stdout, stderr) => {
+	//Attempt to remove and stop the container before creating the container.
+	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
-	    // node couldn't execute the command
-	    console.log("Error");
-	    newNotification("The Docker container failed to be created. It may already exist.");
-	    return;
+	    console.log("Failed to stop container");
 	  }
 
+	  exec("docker rm bitmarkNode", (err, stdout, stderr) => {
+	    if (err) {
+	      console.log("Failed to remove container");
+	    }
+
+	    var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
+	    exec(command, (err, stdout, stderr) => {
+	      if (err) {
+	        console.log("Failed to create container");
+	        newNotification("The Docker container failed to be created. Ensure you're connected to the Internet.");
+	        return;
+	      }
+
+	      console.log(`${stdout}`);
+	      newNotification("The Docker container was created successfully.");
+	      mainWindow.reload();
+	    });
+
+	    console.log(`${stdout}`);
+	  });
+
+
 	  console.log(`${stdout}`);
-	  newNotification("The Docker container was created successfully.");
 	  mainWindow.reload();
 	});
+	
+
 };
 
 // Check for updates from bitmark/bitmark-node
@@ -231,7 +252,7 @@ function pullUpdate(){
 	exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
-	    console.log("Error");
+	    console.log("Failed to pull update");
 	    newNotification("There was an error checking for an update. Please check your internet connection and restart Docker.");
 	    return;
 	  }
@@ -246,12 +267,10 @@ function pullUpdate(){
 	  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node") !== -1){
 	  	console.log("Updated");
 	  	newNotification("The Bitmark Node software has downloaded. Installing updates now.");
-	  	stopBitmarkNode_noNotif();
-	  	removeBitmarkNode_noNotif();
 	  	createContainerHelper();
 	  	newNotification("The Bitmark Node software has been updated.");
 	  }else{
-	  	console.log("Error");
+	  	console.log("Unknown update error");
 	  	newNotification("There was an error checking for an update. Please check your internet connection and restart Docker.");
 	  }
 	});
@@ -265,79 +284,13 @@ function startBitmarkNode_noNotif(){
 	exec("docker start bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
-	    console.log("Error");
+	    console.log("Failed to start container");
 	    return;
 	  }
 
 	  console.log(`${stdout}`);
 	  mainWindow.reload();
 	});
-};
-
-// Stop the bitmarkNode Docker container
-function stopBitmarkNode_noNotif(){
-
-	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
-	  if (err) {
-	    // node couldn't execute the command
-	    console.log("Error");
-	    return;
-	  }
-
-	  console.log(`${stdout}`);
-	  mainWindow.reload();
-	});
-};
-
-// Remove the bitmarkNode Docker container
-function removeBitmarkNode_noNotif(){
-  exec("docker rm bitmarkNode", (err, stdout, stderr) => {
-    if (err) {
-      // node couldn't execute the command
-      console.log("Error");
-      return;
-    }
-
-    console.log(`${stdout}`);
-  });
-};
-
-/* Setter Functions */
-
-//Change the network to bitmark
-function setNetworkBitmark(){
-
-	const network = preferences.value('blockchain.network');
-
-	if(network === "testing"){
-		preferences.value('blockchain.network', 'bitmark');
-		console.log("Changing to bitmark");
-		newNotification("Changing the network to 'bitmark'... (This may take some time)");
-		stopBitmarkNode_noNotif();
-		removeBitmarkNode_noNotif();
-		createContainerHelper();
-	} else {
-		console.log("Already on bitmark");
-		newNotification("The network is already set to 'bitmark'.");
-	}
-};
-
-//Change the network to testing
-function setNetworkTesting(){
-
-	const network = preferences.value('blockchain.network');
-
-	if(network === "bitmark"){
-		preferences.value('blockchain.network', 'testing');
-		console.log("Changing to testing");
-		newNotification("Changing the network to 'testing'... (This may take some time)");
-		stopBitmarkNode_noNotif();
-		removeBitmarkNode_noNotif();
-		createContainerHelper();
-	} else {
-		console.log("Already on testing");
-		newNotification("The network is already set to 'testing'.");
-	}
 };
 
 /* Directory Functions */
@@ -353,9 +306,9 @@ function directoryCheck(dir){
 };
 
 //Check directories
-function directoryCheckHelper(){
+function directoryCheckHelper(dir){
 
-	const folder = preferences.value('directory.folder');
+	const folder = dir;
 
 	bitmarknode = `${folder}/bitmark-node-data`;
 	db = `${bitmarknode}/db`;
@@ -492,10 +445,6 @@ const menuTemplate = [
 	  	click () { stopBitmarkNode(); }
 	  },
       {
-        label: 'Remove bitmarkNode',
-        click () { removeBitmarkNode_noNotif(); }
-      },
-      {
         label: 'Check Directories',
         click () { directoryCheckHelper(); }
       },
@@ -609,6 +558,7 @@ Menu.setApplicationMenu(menu)
 const dataDir = `${userHome}`;
 
 //Preferences Menu
+
 const preferences = new ElectronPreferences({
     /**
      * Where should preferences be saved?
