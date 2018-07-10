@@ -1,10 +1,8 @@
 /* TODO
-  1. Get networkSwitcher working
-  2. Fix bitmark logo text
-  3. Linux testing
-  4. Windows testing
-  5. MacOS testing
-  6. UI redesign
+  1. Linux testing
+  2. Windows testing
+  3. MacOS testing
+  4. UI redesign
     a. Remove top bar and make custom one to fit the theme of the sidebar
     b. rework menu
 */
@@ -54,8 +52,8 @@ app.on('ready', function() {
 		// Set window location and size as what is was on close
 		'x': mainWindowState.x,
 		'y': mainWindowState.y,
-		width: 1200,//mainWindowState.width,
-		height: 800,//mainWindowState.height,
+		width: mainWindowState.width,
+		height: mainWindowState.height,
 		//Set the title
 		title: "Bitmark Node User Interface",
 		icon: path.join(__dirname, 'assets/icons/icon.png')
@@ -97,9 +95,6 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
 
 /* User Interface Functions */
 
@@ -151,15 +146,46 @@ function containerCheck(){
 
 // Start the bitmarkNode Docker container
 function startBitmarkNode(){
+
+	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
+	  //If the container is not setup, create it
+	  if (err) {
+	  	console.log("Failed to start container");
+	  	newNotification("The Docker container is not setup. Please restart the application.");
+	  	return;
+	  }
+
+	  //If the container is stopped, start it
+	  var str = stdout.toString().trim();
+	  if(str === "true"){
+	  	console.log("Container already running.");
+	  	newNotification("The Docker container is already running.");
+	  }else{
+	  	exec("docker start bitmarkNode", (err, stdout, stderr) => {
+	  	  if (err) {
+	  	    // node couldn't execute the command
+	  	    console.log("Failed to start container");
+	  	    newNotification("The Docker container has failed to start.");
+	  	    return;
+	  	  }
+
+	  	  newNotification("The Docker container has started.");
+
+	  	  console.log(`${stdout}`);
+	  	  mainWindow.reload();
+	  	});
+	  }
+	});
+};
+
+// Start the bitmarkNode Docker container without a notification
+function startBitmarkNode_noNotif(){
 	exec("docker start bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Failed to start container");
-	    newNotification("The Docker container has failed to start.");
 	    return;
 	  }
-
-	  newNotification("The Docker container has started.");
 
 	  console.log(`${stdout}`);
 	  mainWindow.reload();
@@ -186,7 +212,7 @@ function stopBitmarkNode(){
 };
 
 
-// Assumes the container is not created
+//Create the container with no information given
 function createContainerHelper(){
 	const net = preferences.value('blockchain.network');
 	const dir = preferences.value('directory.folder');
@@ -204,44 +230,43 @@ function createContainerHelperIPOnly(net, dir){
 }
 
 //The command may have to be adjusted for the system (same with the folder)
-// Create the docker container
+//Create the docker container
 function createContainer(ip, net, dir){
 
 	directoryCheckHelper(dir);
 
 	//Attempt to remove and stop the container before creating the container.
 	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
-	  if (err) {
-	    console.log("Failed to stop container");
-	  }
+		if (err) {
+			//Continue if failed to remove the container as the container may not exist
+			console.log("Failed to stop container");
+	  	}
 
-	  exec("docker rm bitmarkNode", (err, stdout, stderr) => {
-	    if (err) {
-	      console.log("Failed to remove container");
-	    }
+		console.log(`${stdout}`);
 
-	    var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
-	    exec(command, (err, stdout, stderr) => {
-	      if (err) {
-	        console.log("Failed to create container");
-	        newNotification("The Docker container failed to be created. Ensure you're connected to the Internet.");
-	        return;
-	      }
+		exec("docker rm bitmarkNode", (err, stdout, stderr) => {
+	    	if (err) {
+	    		//Continue if failed to remove the container as the container may not exist
+	    		console.log("Failed to remove container");
+	    	}
 
-	      console.log(`${stdout}`);
-	      newNotification("The Docker container was created successfully.");
-	      mainWindow.reload();
-	    });
+	    	console.log(`${stdout}`);
 
-	    console.log(`${stdout}`);
-	  });
+	    	var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
+	    	exec(command, (err, stdout, stderr) => {
+	    		if (err) {
+	        		console.log("Failed to create container");
+	        		newNotification("The Docker container failed to be created. Ensure you're connected to the Internet.");
+	        		return;
+	    		}
 
-
-	  console.log(`${stdout}`);
-	  mainWindow.reload();
+	    		console.log(`${stdout}`);
+	    		newNotification("The Docker container was created successfully.");
+	    	});
+		});
 	});
-	
-
+	//Reload the window when completed
+	mainWindow.reload();
 };
 
 // Check for updates from bitmark/bitmark-node
@@ -277,21 +302,7 @@ function pullUpdate(){
 };
 
 
-/* No Notification Terminal Calling Functions */
 
-// Start the bitmarkNode Docker container
-function startBitmarkNode_noNotif(){
-	exec("docker start bitmarkNode", (err, stdout, stderr) => {
-	  if (err) {
-	    // node couldn't execute the command
-	    console.log("Failed to start container");
-	    return;
-	  }
-
-	  console.log(`${stdout}`);
-	  mainWindow.reload();
-	});
-};
 
 /* Directory Functions */
 
@@ -319,8 +330,6 @@ function directoryCheckHelper(dir){
 	directoryCheck(db);
 	directoryCheck(data);
 	directoryCheck(datatest);
-
-	newNotification("The neccessary directories were already setup or recently created.");
 };
 
 //Menu for UI

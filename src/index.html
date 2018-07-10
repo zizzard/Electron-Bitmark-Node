@@ -53,17 +53,6 @@
           display: block;
       }
 
-      .sidenav title {
-          padding: 6px 8px 6px 16px;
-          font-family: Avenir;
-          letter-spacing: 0.05em;
-          font-weight: bold;
-          font-style: bold;
-          font-size: 20px;
-          color: white;
-          display: block;
-      }
-
       .sidenav sub {
         padding: 6px 8px 6px 16px;
         font-family: Avenir;
@@ -88,24 +77,21 @@
 
       }
 
-      .image-center {
+      .image-text {
           display: block;
-          max-width:64px;
-          max-height:64px;
           margin-left: auto;
           margin-right: auto;
-          width: 50%;
+          width: 75%;
           padding-bottom: 12px;
       }
     </style>
   </head>
   <body>
     <div class="sidenav">
-      <img src="assets/icons/icon.png" class="image-center"/>
-      <title>Bitmark Node</title>
-      <hr width="75%">
-      <a onClick="startBitmarkNode();" style="cursor: pointer; cursor: hand;">Start Container</a>
-      <a onClick="stopBitmarkNode();" style="cursor: pointer; cursor: hand;">Stop Container</a>
+      <img src="assets/icons/bitmark-logo.svg" class="image-text"/>
+      <hr width="65%">
+      <a onClick="startBitmarkNodeLocal();" style="cursor: pointer; cursor: hand;">Start Container</a>
+      <a onClick="stopBitmarkNodeLocal();" style="cursor: pointer; cursor: hand;">Stop Container</a>
       <hr width="50%">
       <a onClick="setNetworkBitmark();" style="cursor: pointer; cursor: hand;">Switch to Bitmark</a>
       <a onClick="setNetworkTesting();" style="cursor: pointer; cursor: hand;">Switch to Testing</a>
@@ -113,7 +99,8 @@
       <a onClick="pullUpdate();" style="cursor: pointer; cursor: hand;">Check for Updates</a>
       <hr width="50%">
       <a onClick="showPreferences();" style="cursor: pointer; cursor: hand;">Show Preferences</a>
-      <hr width="75%">
+      <a onClick="refreshWindow();" style="cursor: pointer; cursor: hand;">Refresh Window</a>
+      <hr width="65%">
       <sub>Bitmark Inc. 2018</sub>
     </div>
     <div class="main"> 
@@ -121,6 +108,19 @@
     </div>
     <script>
     	const { ipcRenderer, remote } = require('electron');
+
+    	function startBitmarkNodeLocal(){
+    		startBitmarkNode();
+    	};
+
+    	function stopBitmarkNodeLocal(){
+    		stopBitmarkNode();
+    	};
+
+    	function refreshWindow(){
+    		var window = remote.getCurrentWindow();
+    		window.reload();
+    	}
 
     	function showPreferences(){
     		// Display the preferences window
@@ -137,7 +137,7 @@
     			ipcRenderer.sendSync('setPreferences', {...preferences});
     			console.log("Changing to bitmark");
     			newNotification("Changing the network to 'bitmark'... (This may take some time)");
-    			createContainerHelper();
+    			createContainerHelperLocal();
     		} else {
     			console.log("Already on bitmark");
     			newNotification("The network is already set to 'bitmark'.");
@@ -154,7 +154,8 @@
     			ipcRenderer.sendSync('setPreferences', {...preferences});
     			console.log("Changing to testing");
     			newNotification("Changing the network to 'testing'... (This may take some time)");
-    			createContainerHelper();
+    			//Calls local createContainerHelper
+    			createContainerHelperLocal();
     		} else {
     			console.log("Already on testing");
     			newNotification("The network is already set to 'testing'.");
@@ -162,7 +163,7 @@
     	};
 
     	//Get the network and directory and pass it to the main function to get the IP then create the container
-    	function createContainerHelper(){
+    	function createContainerHelperLocal(){
     		const preferences = ipcRenderer.sendSync('getPreferences');
     		var net = preferences.blockchain.network;
     		var dir = preferences.directory.folder;
