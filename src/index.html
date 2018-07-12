@@ -10,7 +10,7 @@
            font-family: 'Avenir';
            src: url("assets/fonts/avenir/avenir.woff");
            font-weight: normal;
-           font-style: normal;
+           font-style : normal;
        }
 
        @font-face {
@@ -25,7 +25,12 @@
              src: url("assets/fonts/avenir/Avenir-Light.woff");
              font-weight: light;
              font-style: light;
-         }
+        }
+
+      body {
+        padding: 0px;
+        margin: 0px; 
+      }
 
       /* The sidebar menu */
       .sidenav {
@@ -35,11 +40,10 @@
           z-index: 1; /* Stay on top */
           top: 0; /* Stay at the top */
           left: 0;
-          background-color: #36454F; /* Dark Grey */
-          border-right: solid #C1C1C1;
-          border-width: 0 1px;
+          background-color: #36454F;
           overflow-x: hidden; /* Disable horizontal scroll */
           padding-top: 20px;
+          top: 25px;
           text-align: center;
       }
 
@@ -74,7 +78,7 @@
         overflow:hidden;
         left:17.5%;
         position:fixed;
-
+        top: 25px;
       }
 
       .image-text {
@@ -84,10 +88,95 @@
           width: 75%;
           padding-bottom: 12px;
       }
-      
+
+
+      /* Title Bar */
+      .title-bar {
+        height: 25px; 
+        background-color: #3b444a;
+        margin: 0;
+        padding: 0;
+        -webkit-app-region: drag;
+      }
+
+      .wc-box {
+        -webkit-app-region: no-drag;
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background-color: #3b444a;
+      }
+
+      .wc-box div {
+        position: relative;
+        float: left;
+        width: 25px;
+        height: 25px;
+      }
+
+      .wc-box div:before,
+      .wc-box div:after {
+        top: 30%;
+        right: 30%;
+        bottom: 30%;
+        left: 30%;
+        content: " ";
+        position: absolute;
+        border-color: #CCCCCC;
+        border-style: solid;
+        border-width: 0 0 2px 0;
+      }
+
+      .wc-box .minimize:before {
+        border-bottom-width: 2px;
+      }
+
+      .wc-box .maximize:before {
+        border-width: 1px 1px 2px 1px;
+      }
+
+      .wc-box .close:before,
+      .wc-box .close:after {
+        bottom: 50%;
+        top: 50%;
+      }
+
+      .wc-box .close:before {
+        transform: rotate(45deg);
+      }
+
+      .wc-box .close:after {
+        transform: rotate(-45deg);
+      }
+
+      .wc-box div:hover {
+        background-color: #CCCCCC;
+      }
+
+      .wc-box .close:hover {
+        background-color: #E04343;
+      }
+
+      .wc-box div:hover:after,
+      .wc-box div:hover:before {
+        border-color: #333333;
+      }
+
+      .wc-box .close:hover:after,
+      .wc-box .close:hover:before {
+        border-color: #FFFFFF;
+      }
+
     </style>
   </head>
   <body>
+    <div class="title-bar">
+      <div class="wc-box">
+        <div class="minimize" id="min"></div>
+        <div class="maximize" id="max"></div>
+        <div class="close" id="close"></div>
+      </div>
+    </div>
     <div class="sidenav">
       <img src="assets/icons/bitmark-logo.svg" class="image-text"/>
       <hr width="65%">
@@ -171,8 +260,47 @@
     		createContainerHelperIPOnly(net, dir)
     	}
 
+      //Function to handle buttons
+      (function () {
+            const remote = require('electron').remote; 
+            
+            function init() { 
+              document.getElementById("min").addEventListener("click", function (e) {
+                const window = remote.getCurrentWindow();
+                window.minimize(); 
+              });
+              
+              document.getElementById("max").addEventListener("click", function (e) {
+                const window = remote.getCurrentWindow();
+                if (!window.isMaximized()) {
+                  window.maximize();
+                } else {
+                  window.unmaximize();
+                }  
+              });
+              
+              document.getElementById("close").addEventListener("click", function (e) {
+                const window = remote.getCurrentWindow();
+                window.close();
+              }); 
+            }; 
+            
+            document.onreadystatechange = function () {
+              if (document.readyState == "complete") {
+                init(); 
+              }
+            };
+      })();
+
     </script>
   </body>
 </html>
 
 
+<!--
+
+  <img src="assets/icons/fontawesome/window-close-minimize.svg" class="image-text"/>
+  <img src="assets/icons/fontawesome/window-close-close.svg" class="image-buttons"/>
+  <img src="assets/icons/fontawesome/window-close-maximize.svg" class="image-buttons"/>
+
+-->

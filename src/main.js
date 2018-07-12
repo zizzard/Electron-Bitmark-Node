@@ -2,9 +2,6 @@
   1. Linux testing
   2. Windows testing
   3. MacOS testing
-  4. UI redesign
-    a. Remove top bar and make custom one to fit the theme of the sidebar
-    b. rework menu
 */
 
 const {app, BrowserWindow} = require('electron'); //Electron Default BrowserWindow - Used to display UI
@@ -56,7 +53,8 @@ app.on('ready', function() {
 		height: mainWindowState.height,
 		//Set the title
 		title: "Bitmark Node User Interface",
-		icon: path.join(__dirname, 'assets/icons/icon.png')
+		icon: path.join(__dirname, 'assets/icons/icon.png'),
+    frame: false
 	});
 
 	//Load the webpage
@@ -332,241 +330,12 @@ function directoryCheckHelper(dir){
 	directoryCheck(datatest);
 };
 
-//Menu for UI
-const menuTemplate = [
-    {
-    label: 'File',
-    submenu: [
-      {
-        label: 'Preferences',
-        accelerator: 'CmdOrCtrl+,',
-        click () { preferences.show(); }
-      },
-      {
-        role: 'quit'
-      }
-    ]
-  },
-  {
-    label: 'Edit',
-    submenu: [
-      {
-        role: 'undo'
-      },
-      {
-        role: 'redo'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'cut'
-      },
-      {
-        role: 'copy'
-      },
-      {
-        role: 'paste'
-      },
-      {
-        role: 'pasteandmatchstyle'
-      },
-      {
-        role: 'delete'
-      },
-      {
-        role: 'selectall'
-      }
-    ]
-  },
-  {
-    label: 'View',
-    submenu: [
-      {
-        label: 'Reload',
-        accelerator: 'CmdOrCtrl+R',
-        click (item, focusedWindow) {
-          if (focusedWindow) focusedWindow.reload()
-        }
-      },
-      {
-      	role: 'toggledevtools'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'resetzoom'
-      },
-      {
-        role: 'zoomin'
-      },
-      {
-        role: 'zoomout'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'togglefullscreen'
-      }
-    ]
-  },
-  {
-    role: 'window',
-    submenu: [
-      {
-        role: 'minimize'
-      },
-      {
-        role: 'close'
-      }
-    ]
-  },
-  {
-    role: 'help',
-    submenu: [
-      {
-        label: 'Learn More',
-        click () { require('electron').shell.openExternal('https://bitmark.com/tools-api/node') }
-      }
-    ]
-  },
-    {
-    label: 'Testing',
-    submenu: [
-      {
-    	label: 'Development Only'
-      },
-      {
-    	type: 'separator'
-      },
-      {
-        label: 'Create Container',
-        click () { createContainerHelper(); }
-      },
-	  {
-	  	label: 'Start bitmarkNode',
-	  	click () { startBitmarkNode(); }
-	  },
-	  {
-	  	label: 'Stop bitmarkNode',
-	  	click () { stopBitmarkNode(); }
-	  },
-      {
-        label: 'Check Directories',
-        click () { directoryCheckHelper(); }
-      },
-	  {
-	    label: 'Change to Bitmark',
-	    click () { setNetworkBitmark(); }
-	  },
-	  {
-	    label: 'Change to Testing',
-        click () { setNetworkTesting(); }
-  	  },
-	  {
-	    label: 'Pull Update',
-	    click () { pullUpdate(); }
-	  },
-	  {
-	    type: 'separator'
-	  },
-	  {
-	  	label: 'Container Status',
-	  	click () { containerCheck(); }
-	  }
-    ]
-  }
-]
 
 
-if (process.platform === 'darwin') {
-  const name = app.getName()
-  template.unshift({
-    label: name,
-    submenu: [
-      {
-        role: 'about'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'services',
-        submenu: []
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'hide'
-      },
-      {
-        role: 'hideothers'
-      },
-      {
-        role: 'unhide'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'quit'
-      }
-    ]
-  })
-  // Edit menu.
-  template[1].submenu.push(
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Speech',
-      submenu: [
-        {
-          role: 'startspeaking'
-        },
-        {
-          role: 'stopspeaking'
-        }
-      ]
-    }
-  )
-  // Window menu.
-  template[3].submenu = [
-    {
-      label: 'Close',
-      accelerator: 'CmdOrCtrl+W',
-      role: 'close'
-    },
-    {
-      label: 'Minimize',
-      accelerator: 'CmdOrCtrl+M',
-      role: 'minimize'
-    },
-    {
-      label: 'Zoom',
-      role: 'zoom'
-    },
-    {
-      type: 'separator'
-    },
-    {
-      label: 'Bring All to Front',
-      role: 'front'
-    }
-  ]
-}
-
-//Add the menu from the template
-const menu = Menu.buildFromTemplate(menuTemplate)
-Menu.setApplicationMenu(menu)
+//Preferences Menu
 
 //Get the default data directory
 const dataDir = `${userHome}`;
-
-//Preferences Menu
 
 const preferences = new ElectronPreferences({
     /**
