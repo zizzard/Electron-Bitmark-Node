@@ -7,25 +7,29 @@ Built using Electron (v2.0.4) and Electron-Forge (v6.0.0-beta.22)
 * npm 6.1.0 or newer
 
 #### Optional
-* rpmbuild _(to build rpm packages only)_
+* rpmbuild _(used to build .rpm packages)_
 
 ## Setup
 Install npm depedencies:
+
 ```$ npm install ```
 
 ## Run
 To start the application, use:
 
-```electron-forge start```
+```$ electron-forge start```
 
 ## Build
 To build the application, use:
-```electron-forge build```
+
+```$ electron-forge build```
 
 ## Package
 To package the application, use:
-```electron-forge make```
-_Currenlty creates a .deb and .rpm file_
+
+```$ electron-forge make```
+
+<sub>_Currently creates a .deb and .rpm file_</sub>
 
 ## Application Screenshot
 ![Application Screenshot](screenshot.png)
