@@ -99,12 +99,52 @@
         -webkit-app-region: drag;
       }
 
+      .wc-box-menu {
+        -webkit-app-region: no-drag;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        background-color: #3b444a;
+        cursor: pointer;
+      }
+
+      .wc-box-menu div {
+        position: relative;
+        float: left;
+        width: 25px;
+        height: 25px;
+      }
+
+      .wc-box-menu div:before,
+      .wc-box-menu div:after {
+        top: 30%;
+        right: 30%;
+        bottom: 30%;
+        left: 30%;
+        content: " ";
+        position: absolute;
+        border-color: #CCCCCC;
+        border-style: solid;
+        border-width: 0 0 2px 0;
+      }
+
+      .wc-box-menu .menu:before {
+        border-top-width: 2px;
+        border-bottom-width: 2px;
+      }
+
+      .bar{
+        top: -15%;
+        border-top-width: 2px;
+      }
+
       .wc-box {
         -webkit-app-region: no-drag;
         position: absolute;
         top: 0px;
         right: 0px;
         background-color: #3b444a;
+        cursor: pointer;
       }
 
       .wc-box div {
@@ -171,6 +211,9 @@
   </head>
   <body>
     <div class="title-bar">
+      <div class="wc-box-menu">
+        <div class="menu" id="menu"><div class="bar" id="menu"></div></div>
+      </div>
       <div class="wc-box">
         <div class="minimize" id="min"></div>
         <div class="maximize" id="max"></div>
@@ -262,7 +305,8 @@
 
       //Function to handle buttons
       (function () {
-            const remote = require('electron').remote; 
+            const remote = require('electron').remote;
+            const ipc = require('electron').ipcRenderer;
             
             function init() { 
               document.getElementById("min").addEventListener("click", function (e) {
@@ -283,6 +327,11 @@
                 const window = remote.getCurrentWindow();
                 window.close();
               }); 
+
+              // Tell main process to show the menu when demo button is clicked
+              document.getElementById('menu').addEventListener('click', function () {
+                ipc.send('show-context-menu');
+              });
             }; 
             
             document.onreadystatechange = function () {
@@ -295,12 +344,3 @@
     </script>
   </body>
 </html>
-
-
-<!--
-
-  <img src="assets/icons/fontawesome/window-close-minimize.svg" class="image-text"/>
-  <img src="assets/icons/fontawesome/window-close-close.svg" class="image-buttons"/>
-  <img src="assets/icons/fontawesome/window-close-maximize.svg" class="image-buttons"/>
-
--->

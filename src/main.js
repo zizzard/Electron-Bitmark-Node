@@ -14,6 +14,8 @@ const notifier = require('node-notifier'); //Notifications (https://www.npmjs.co
 const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
 const windowStateKeeper = require('electron-window-state'); //Electron-Window-State - Keep window state from instances of program (https://www.npmjs.com/package/electron-window-state)
 const electron = require('electron');
+const MenuItem = electron.MenuItem;
+const ipc = electron.ipcMain;
 
 var fs = require('fs'); //Used to check to see if directories exist/create ones
 var userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
@@ -276,7 +278,7 @@ function pullUpdate(){
 	  if (err) {
 	    // node couldn't execute the command
 	    console.log("Failed to pull update");
-	    newNotification("There was an error checking for an update. Please check your internet connection and restart Docker.");
+	    newNotification("There was an error checking for an update. Please check your Internet connection and restart the Docker application.");
 	    return;
 	  }
 
@@ -294,13 +296,10 @@ function pullUpdate(){
 	  	newNotification("The Bitmark Node software has been updated.");
 	  }else{
 	  	console.log("Unknown update error");
-	  	newNotification("There was an error checking for an update. Please check your internet connection and restart Docker.");
+	  	newNotification("There was an error checking for an update. Please check your Internet connection and restart the Docker application.");
 	  }
 	});
 };
-
-
-
 
 /* Directory Functions */
 
@@ -330,6 +329,21 @@ function directoryCheckHelper(dir){
 	directoryCheck(datatest);
 };
 
+const menu = new Menu()
+menu.append(new MenuItem({ label: 'Hello' }))
+menu.append(new MenuItem({ type: 'separator' }))
+menu.append(new MenuItem({ label: 'Electron', type: 'checkbox', checked: true }))
+
+app.on('browser-window-created', function (event, win) {
+  win.webContents.on('context-menu', function (e, params) {
+    menu.popup(win, params.x, params.y)
+  })
+})
+
+ipc.on('show-context-menu', function (event) {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  menu.popup(win)
+})
 
 
 //Preferences Menu
