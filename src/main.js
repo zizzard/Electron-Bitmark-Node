@@ -56,7 +56,8 @@ app.on('ready', function() {
 		//Set the title
 		title: "Bitmark Node User Interface",
 		icon: path.join(__dirname, 'assets/icons/icon.png'),
-    	frame: false
+    	frame: false,
+    	darkTheme: true
 	});
 
 	//Load the webpage
