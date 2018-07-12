@@ -1,0 +1,182 @@
+body {
+  padding: 0px;
+  margin: 0px; 
+}
+
+/* The sidebar menu */
+.sidenav {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 17.5%; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+  background-color: #36454F;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+  top: 25px;
+  text-align: center;
+}
+
+/* The navigation menu links */
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  font-family: Avenir;
+  font-style: normal;
+  font-size: 16px;
+  color: white;
+  display: block;
+}
+
+.sidenav sub {
+  padding: 6px 8px 6px 16px;
+  font-family: Avenir;
+  font-style: light;
+  font-size: 12px;
+  color: white;
+  display: block;
+}
+
+.frame {
+  display: block;
+  width: 82.5vw;
+  height: 100vh;
+  max-width: 82.5%;
+  margin: 0;
+  padding: 0;
+  border: 0 none;
+  box-sizing: border-box;
+  overflow:hidden;
+  left:17.5%;
+  position:fixed;
+  top: 25px;
+}
+
+.image-text {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 75%;
+  padding-bottom: 12px;
+}
+
+
+/* Title Bar */
+.title-bar {
+  height: 25px; 
+  background-color: #3b444a;
+  margin: 0;
+  padding: 0;
+  -webkit-app-region: drag;
+}
+
+/* Hamburger Menu */
+.wc-box-menu {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-color: #3b444a;
+  cursor: pointer;
+}
+
+.wc-box-menu div {
+  position: relative;
+  float: left;
+  width: 25px;
+  height: 25px;
+}
+
+.wc-box-menu div:before,
+.wc-box-menu div:after {
+  top: 30%;
+  right: 30%;
+  bottom: 30%;
+  left: 30%;
+  content: " ";
+  position: absolute;
+  border-color: #CCCCCC;
+  border-style: solid;
+  border-width: 0 0 2px 0;
+}
+
+.wc-box-menu .menu:before {
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+}
+
+/* Middle bar in hamburger menu */
+.bar{
+  top: -15%;
+  border-top-width: 2px;
+}
+
+/* Minimize, maximize, close */
+.wc-box {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background-color: #3b444a;
+  cursor: pointer;
+}
+
+.wc-box div {
+  position: relative;
+  float: left;
+  width: 25px;
+  height: 25px;
+}
+
+.wc-box div:before,
+.wc-box div:after {
+  top: 30%;
+  right: 30%;
+  bottom: 30%;
+  left: 30%;
+  content: " ";
+  position: absolute;
+  border-color: #CCCCCC;
+  border-style: solid;
+  border-width: 0 0 2px 0;
+}
+
+.wc-box .minimize:before {
+  border-bottom-width: 2px;
+}
+
+.wc-box .maximize:before {
+  border-width: 1px 1px 2px 1px;
+}
+
+.wc-box .close:before,
+.wc-box .close:after {
+  bottom: 50%;
+  top: 50%;
+}
+
+.wc-box .close:before {
+  transform: rotate(45deg);
+}
+
+.wc-box .close:after {
+  transform: rotate(-45deg);
+}
+
+.wc-box div:hover {
+  background-color: #CCCCCC;
+}
+
+.wc-box .close:hover {
+  background-color: #E04343;
+}
+
+.wc-box div:hover:after,
+.wc-box div:hover:before {
+  border-color: #333333;
+}
+
+.wc-box .close:hover:after,
+.wc-box .close:hover:before {
+  border-color: #FFFFFF;
+}

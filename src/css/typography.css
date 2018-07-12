@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'Avenir';
+  src: url("./assets/fonts/avenir/avenir.woff");
+  font-weight: normal;
+  font-style : normal;
+ }
+
+@font-face {
+  font-family: 'Avenir';
+  src: url("../assets/fonts/avenir/Avenir-Black.woff");
+  font-weight: bold;
+  font-style: bold;
+}
+
+@font-face {
+  font-family: 'Avenir';
+  src: url("../assets/fonts/avenir/Avenir-Light.woff");
+  font-weight: light;
+  font-style: light;
+}

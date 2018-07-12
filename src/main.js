@@ -1,11 +1,13 @@
 /* TODO
-  1. Linux testing
+  1. Add context menu
   2. Windows testing
   3. MacOS testing
 */
 
+const electron = require('electron'); //Electron
 const {app, BrowserWindow} = require('electron'); //Electron Default BrowserWindow - Used to display UI
 const {Menu} = require('electron'); //Electron Default Menu
+const MenuItem = electron.MenuItem //Electron Menu Item - Context Menu
 const path = require('path'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const os = require('os'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
 const ElectronPreferences = require('electron-preferences'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
@@ -13,9 +15,7 @@ const publicIp = require('public-ip'); //Public-IP - Used to get external IP add
 const notifier = require('node-notifier'); //Notifications (https://www.npmjs.com/package/node-notifier)
 const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
 const windowStateKeeper = require('electron-window-state'); //Electron-Window-State - Keep window state from instances of program (https://www.npmjs.com/package/electron-window-state)
-const electron = require('electron');
-const MenuItem = electron.MenuItem;
-const ipc = electron.ipcMain;
+const ipc = electron.ipcMain //IPC used to display context menu (hamburger menu)
 
 var fs = require('fs'); //Used to check to see if directories exist/create ones
 var userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
@@ -56,7 +56,7 @@ app.on('ready', function() {
 		//Set the title
 		title: "Bitmark Node User Interface",
 		icon: path.join(__dirname, 'assets/icons/icon.png'),
-    frame: false
+    	frame: false
 	});
 
 	//Load the webpage
