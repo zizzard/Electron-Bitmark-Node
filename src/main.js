@@ -334,10 +334,12 @@ function directoryCheckHelper(dir){
 	directoryCheck(datatest);
 };
 
+//Create the file submenu
 var fileMenu = new Menu()
 fileMenu.append(new MenuItem({ label: 'Preferences', click() { preferences.show(); }}))
 fileMenu.append(new MenuItem({ role: 'quit' }))
 
+//Create the edit submenu
 var editMenu = new Menu()
 editMenu.append(new MenuItem({ role: 'undo' }))
 editMenu.append(new MenuItem({ role: 'redo' }))
@@ -346,6 +348,7 @@ editMenu.append(new MenuItem({ role: 'cut' }))
 editMenu.append(new MenuItem({ role: 'copy' }))
 editMenu.append(new MenuItem({ role: 'paste' }))
 
+//create the view submenu
 var viewMenu = new Menu()
 viewMenu.append(new MenuItem({ label: 'Reload', accelerator: 'CmdOrCtrl+R', click (item, focusedWindow) { if (focusedWindow) focusedWindow.reload(); }}))
 viewMenu.append(new MenuItem({ type: 'separator' }))
@@ -355,6 +358,7 @@ viewMenu.append(new MenuItem({ role: 'zoomout' }))
 viewMenu.append(new MenuItem({ type: 'separator' }))
 viewMenu.append(new MenuItem({ role: 'togglefullscreen' }))
 
+//Create the main menu
 var menu = new Menu()
 menu.append(new MenuItem({ label: 'File', submenu: fileMenu }))
 menu.append(new MenuItem({ label: 'Edit', submenu: editMenu }))
