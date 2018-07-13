@@ -3,6 +3,7 @@
   "productName": "bitmark-node",
   "version": "1.0.0",
   "description": "Bitmark Node User Interface",
+  "productDescription" : "User interface to view and control the Bitmark Node Docker Container. Read more at bitmark.org.",
   "main": "src/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -11,6 +12,7 @@
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
   },
+  "repository": "https://github.com/zizzard/Electron-Bitmark-Node",
   "keywords": [
     "bitmark",
     "node",
@@ -27,7 +29,7 @@
   "homepage": "https://github.com/bitmark-inc/bitmark-node#readme",
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "electronPackagerConfig": {},
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",

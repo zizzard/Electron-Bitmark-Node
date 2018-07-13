@@ -6,9 +6,6 @@ Built using Electron (v2.0.4) and Electron-Forge (v6.0.0-beta.22)
 * Node.js 10.5.0 or newer
 * npm 6.1.0 or newer
 
-#### Optional
-* rpmbuild _(used to build .rpm packages)_
-
 ## Setup
 Install npm depedencies:
 

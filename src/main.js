@@ -1,5 +1,6 @@
 /* TODO
-  1. Add context menu
+  1. Look into switching exec processes to synchronous (using execSync instead of exec)
+  	a. Could also allow for refreshing windows after start/stop command is complete
   2. Windows testing
   3. MacOS testing
 */
@@ -53,9 +54,10 @@ app.on('ready', function() {
 		'y': mainWindowState.y,
 		width: mainWindowState.width,
 		height: mainWindowState.height,
-		//Set the title
+		minWidth: 985,
+		minHeight: 440,
 		title: "Bitmark Node User Interface",
-		icon: path.join(__dirname, 'assets/icons/icon.png'),
+		icon: path.join(__dirname, 'assets/icons/app_icon.png'),
     	frame: false,
     	darkTheme: true
 	});
@@ -81,8 +83,6 @@ app.on('ready', function() {
 });
 
 
-
-
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
@@ -100,6 +100,7 @@ app.on('activate', () => {
   }
 });
 
+
 /* User Interface Functions */
 
 //Display notification with str text
@@ -108,7 +109,7 @@ function newNotification(str){
 		{
 			title: "Bitmark Node",
 			message: `${str}`,
-			icon: path.join(__dirname, 'assets/icons/icon.png'),
+			icon: path.join(__dirname, 'assets/icons/app_icon.png'),
 			sound: true,
 			wait: false
 		}
@@ -333,25 +334,40 @@ function directoryCheckHelper(dir){
 	directoryCheck(datatest);
 };
 
-/*const menu = new Menu()
-menu.append(new MenuItem({ label: 'Hello' }))
-menu.append(new MenuItem({ type: 'separator' }))
-menu.append(new MenuItem({ label: 'Electron', type: 'checkbox', checked: true }))
+var fileMenu = new Menu()
+fileMenu.append(new MenuItem({ label: 'Preferences', click() { preferences.show(); }}))
+fileMenu.append(new MenuItem({ role: 'quit' }))
 
-app.on('browser-window-created', function (event, win) {
-  win.webContents.on('context-menu', function (e, params) {
-    menu.popup(win, params.x, params.y)
-  })
-})
+var editMenu = new Menu()
+editMenu.append(new MenuItem({ role: 'undo' }))
+editMenu.append(new MenuItem({ role: 'redo' }))
+editMenu.append(new MenuItem({ type: 'separator' }))
+editMenu.append(new MenuItem({ role: 'cut' }))
+editMenu.append(new MenuItem({ role: 'copy' }))
+editMenu.append(new MenuItem({ role: 'paste' }))
 
+var viewMenu = new Menu()
+viewMenu.append(new MenuItem({ label: 'Reload', accelerator: 'CmdOrCtrl+R', click (item, focusedWindow) { if (focusedWindow) focusedWindow.reload(); }}))
+viewMenu.append(new MenuItem({ type: 'separator' }))
+viewMenu.append(new MenuItem({ role: 'resetzoom' }))
+viewMenu.append(new MenuItem({ role: 'zoomin' }))
+viewMenu.append(new MenuItem({ role: 'zoomout' }))
+viewMenu.append(new MenuItem({ type: 'separator' }))
+viewMenu.append(new MenuItem({ role: 'togglefullscreen' }))
+
+var menu = new Menu()
+menu.append(new MenuItem({ label: 'File', submenu: fileMenu }))
+menu.append(new MenuItem({ label: 'Edit', submenu: editMenu }))
+menu.append(new MenuItem({ label: 'View', submenu: viewMenu }))
+menu.append(new MenuItem({ label: 'About', click() { electron.shell.openExternal('https://bitmark.com') }}))
+
+//Show the menu on click
 ipc.on('show-context-menu', function (event) {
   const win = BrowserWindow.fromWebContents(event.sender)
   menu.popup(win)
 })
-*/
 
 //Preferences Menu
-
 //Get the default data directory
 const dataDir = `${userHome}`;
 
@@ -494,13 +510,13 @@ const preferences = new ElectronPreferences({
                             {
                                 'label': 'container',
                                 'heading': 'Bitmark Node Docker Container',
-                                'content': "<p>https://hub.docker.com/r/bitmark/bitmark-node/</p>",
+                                'content': 'Read more about the Bitmark Node Docker Container that runs the software <a href="https://hub.docker.com/r/bitmark/bitmark-node/" base target="_blank" style="color:black">here</a>.',
                                 'type': 'message',
                             },
                             {
                                 'label': 'electron',
                                 'heading': 'Electron',
-                                'content': "<p>https://electronjs.org/</p>",
+                                'content': 'Read more about the Electron Framework used to build this application <a href="https://electronjs.org/" base target="_blank" style="color:black">here</a>.',
                                 'type': 'message',
                             },
                         ]
