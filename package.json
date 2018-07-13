@@ -29,7 +29,9 @@
   "homepage": "https://github.com/bitmark-inc/bitmark-node#readme",
   "config": {
     "forge": {
-      "electronPackagerConfig": {},
+      "electronPackagerConfig": {
+        "icon": "src/assets/icons/app_icon.png"
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",

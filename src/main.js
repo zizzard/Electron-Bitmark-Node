@@ -1,8 +1,6 @@
 /* TODO
-  1. Look into switching exec processes to synchronous (using execSync instead of exec)
-  	a. Could also allow for refreshing windows after start/stop command is complete
-  2. Windows testing
-  3. MacOS testing
+  1. Windows testing
+  2. MacOS testing
 */
 
 const electron = require('electron'); //Electron
