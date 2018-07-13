@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Bitmark Node User Interface</title>
     <script src="main.js"></script>
-    <script src="scripts.js"></script>
+    <script src="js/scripts.js"></script>
+    <script src="js/jquery-1.7.1.js"></script>
     <link rel="stylesheet" type="text/css" href="css/typography.css">
     <link rel="stylesheet" href="css/styles.css">
   </head>
@@ -36,8 +37,20 @@
       <hr width="65%">
       <sub>Bitmark Inc. 2018</sub>
     </div>
-    <div class="main"> 
+    <div id="main" class="main"> 
       <iframe src="http://localhost:9980" class="frame"/></iframe>
     </div>
   </body>
+  <script type="text/javascript">
+    //Open all external links in browser - Uses JQuery
+    let shell = require('electron').shell
+    $('iframe').load(function(){
+      $(this).contents().find("body").on('click', function(event) { 
+        if (event.target.href.startsWith('https')) {
+          event.preventDefault()
+          shell.openExternal(event.target.href)
+        }
+      });
+    });
+  </script>
 </html>

@@ -80,6 +80,9 @@ app.on('ready', function() {
 	setTimeout(autoUpdateCheck, 2000);
 });
 
+
+
+
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
@@ -330,7 +333,7 @@ function directoryCheckHelper(dir){
 	directoryCheck(datatest);
 };
 
-const menu = new Menu()
+/*const menu = new Menu()
 menu.append(new MenuItem({ label: 'Hello' }))
 menu.append(new MenuItem({ type: 'separator' }))
 menu.append(new MenuItem({ label: 'Electron', type: 'checkbox', checked: true }))
@@ -345,7 +348,7 @@ ipc.on('show-context-menu', function (event) {
   const win = BrowserWindow.fromWebContents(event.sender)
   menu.popup(win)
 })
-
+*/
 
 //Preferences Menu
 
