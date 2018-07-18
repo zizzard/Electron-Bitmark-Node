@@ -8,6 +8,11 @@ function stopBitmarkNodeLocal(){
 	stopBitmarkNode();
 };
 
+function restartBitmarkNodeLocal(){
+	newNotification("Restarting container. This may take some time.");
+	createContainerHelperLocal();
+};
+
 function refreshWindow(){
 	var window = remote.getCurrentWindow();
 	window.reload();
@@ -27,7 +32,7 @@ function setNetworkBitmark(){
 		preferences.blockchain.network = "bitmark";
 		ipcRenderer.sendSync('setPreferences', {...preferences});
 		console.log("Changing to bitmark");
-		newNotification("Changing the network to 'bitmark'... (This may take some time)");
+		newNotification("Changing the network to 'bitmark'. This may take some time.");
 		createContainerHelperLocal();
 	} else {
 		console.log("Already on bitmark");
@@ -44,7 +49,7 @@ function setNetworkTesting(){
 		preferences.blockchain.network = "testing";
 		ipcRenderer.sendSync('setPreferences', {...preferences});
 		console.log("Changing to testing");
-		newNotification("Changing the network to 'testing'... (This may take some time)");
+		newNotification("Changing the network to 'testing'. This may take some time.");
 		//Calls local createContainerHelper
 		createContainerHelperLocal();
 	} else {

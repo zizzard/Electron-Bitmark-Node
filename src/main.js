@@ -1,5 +1,5 @@
 /* TODO
-  1. Windows testing
+  1. Better container switching on Windows
   2. MacOS testing
 */
 
@@ -25,6 +25,13 @@ const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
+}
+
+//Check if system is windows and if it is set the data dir to appdata folder
+var isWin = process.platform === "win32"; //Check if platform is windows
+var dataDir = `${userHome}`;
+if(isWin){
+	dataDir = `${userHome}\\AppData\\Roaming`
 }
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -172,7 +179,7 @@ function startBitmarkNode(){
 	  	    return;
 	  	  }
 
-	  	  newNotification("The Docker container has started.");
+	  	  newNotification("The Docker container has started. Please refresh your window.");
 
 	  	  console.log(`${stdout}`);
 	  	  mainWindow.reload();
@@ -198,7 +205,7 @@ function startBitmarkNode_noNotif(){
 // Stop the bitmarkNode Docker container
 function stopBitmarkNode(){
 	
-	newNotification("Stopping the Docker container... (This may take some time)");
+	newNotification("Stopping the Docker container. This may take some time.");
 
 	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
@@ -232,10 +239,8 @@ function createContainerHelperIPOnly(net, dir){
 	});
 }
 
-//The command may have to be adjusted for the system (same with the folder)
 //Create the docker container
 function createContainer(ip, net, dir){
-
 	directoryCheckHelper(dir);
 
 	//Attempt to remove and stop the container before creating the container.
@@ -255,7 +260,12 @@ function createContainer(ip, net, dir){
 
 	    	console.log(`${stdout}`);
 
-	    	var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
+	    	if(isWin){
+	    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}\\bitmark-node-data\\db:\\.config\\bitmark-node\\db -v ${dir}\\bitmark-node-data\\data:\\.config\\bitmark-node\\bitmarkd\\bitmark\\data -v ${dir}\\bitmark-node-data\\data-test:\\.config\\bitmark-node\\bitmarkd\\testing\\data bitmark/bitmark-node`
+			}else{
+	    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
+	    	}
+	    	
 	    	exec(command, (err, stdout, stderr) => {
 	    		if (err) {
 	        		console.log("Failed to create container");
@@ -275,7 +285,7 @@ function createContainer(ip, net, dir){
 // Check for updates from bitmark/bitmark-node
 function pullUpdate(){
 
-	newNotification("Checking for updates... (This may take some time)");
+	newNotification("Checking for updates. This may take some time.");
 
 	exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
 	  if (err) {
@@ -310,7 +320,7 @@ function pullUpdate(){
 function directoryCheck(dir){
 	if (!fs.existsSync(dir)){
 	    fs.mkdirSync(dir);
-	    console.log(`The directory ${dir} does not exist. Creating it now...`);
+	    console.log(`The directory ${dir} does not exist. Creating it now.`);
 	}else{
 		console.log("The directory exists.")
 	}
@@ -337,15 +347,6 @@ var fileMenu = new Menu()
 fileMenu.append(new MenuItem({ label: 'Preferences', click() { preferences.show(); }}))
 fileMenu.append(new MenuItem({ role: 'quit' }))
 
-//Create the edit submenu
-var editMenu = new Menu()
-editMenu.append(new MenuItem({ role: 'undo' }))
-editMenu.append(new MenuItem({ role: 'redo' }))
-editMenu.append(new MenuItem({ type: 'separator' }))
-editMenu.append(new MenuItem({ role: 'cut' }))
-editMenu.append(new MenuItem({ role: 'copy' }))
-editMenu.append(new MenuItem({ role: 'paste' }))
-
 //create the view submenu
 var viewMenu = new Menu()
 viewMenu.append(new MenuItem({ label: 'Reload', accelerator: 'CmdOrCtrl+R', click (item, focusedWindow) { if (focusedWindow) focusedWindow.reload(); }}))
@@ -353,13 +354,10 @@ viewMenu.append(new MenuItem({ type: 'separator' }))
 viewMenu.append(new MenuItem({ role: 'resetzoom' }))
 viewMenu.append(new MenuItem({ role: 'zoomin' }))
 viewMenu.append(new MenuItem({ role: 'zoomout' }))
-viewMenu.append(new MenuItem({ type: 'separator' }))
-viewMenu.append(new MenuItem({ role: 'togglefullscreen' }))
 
 //Create the main menu
 var menu = new Menu()
 menu.append(new MenuItem({ label: 'File', submenu: fileMenu }))
-menu.append(new MenuItem({ label: 'Edit', submenu: editMenu }))
 menu.append(new MenuItem({ label: 'View', submenu: viewMenu }))
 menu.append(new MenuItem({ label: 'About', click() { electron.shell.openExternal('https://bitmark.com') }}))
 
@@ -371,8 +369,6 @@ ipc.on('show-context-menu', function (event) {
 
 //Preferences Menu
 //Get the default data directory
-const dataDir = `${userHome}`;
-
 const preferences = new ElectronPreferences({
     /**
      * Where should preferences be saved?
@@ -417,35 +413,6 @@ const preferences = new ElectronPreferences({
      */
     'sections': [
         {
-            'id': 'blockchain',
-            'label': 'Blockchain Settings',
-            'icon': 'settings-gear-63',
-            'form': {
-                'groups': [
-                    {
-                        'label': 'Blockchain Settings',
-                        'fields': [
-                            {
-                                'heading': 'Blockchain Network',
-                                'content': "<p>The 'bitmark' blockchain is the offical version of the Bitmark blockchain.\
-                                               The 'testing' is a testnet version of the blockchain used for development testing.</p>",
-                                'type': 'message',
-                            },
-                            {
-                                'key': 'network',
-                                'type': 'radio',
-                                'options': [
-                                    {'label': 'Bitmark', 'value': 'bitmark'},
-                                    {'label': 'Testing', 'value': 'testing'},
-                                ],
-                                'help': 'Select which Blockchain you would like to use.'
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        {
             'id': 'update',
             'label': 'Update Settings',
             'icon': 'square-download',
@@ -465,28 +432,8 @@ const preferences = new ElectronPreferences({
                                     {'label': 'Automatically check for updates', 'value': true},
                                     {'label': 'Manually check for updates', 'value': false},
                                 ],
-                                'help': 'Note: Automatic updates will be installed automatically.'
+                                'help': 'Note: If an update is found, it will automatically be installed.'
                             },
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            'id': 'directory',
-            'label': 'File Directory',
-            'icon': 'folder-15',
-            'form': {
-                'groups': [
-                    {
-                        'label': 'File Directory',
-                        'fields': [
-                            {
-                            	'label': 'Blockchain storage directory',
-                                'key': 'folder',
-                                'type': 'directory',
-                                'help': 'The location where the Bitmark Node container will store its data.'
-                            }
                         ]
                     }
                 ]
@@ -512,7 +459,7 @@ const preferences = new ElectronPreferences({
                             {
                                 'label': 'container',
                                 'heading': 'Bitmark Node Docker Container',
-                                'content': 'Read more about the Bitmark Node Docker Container that runs the software <a href="https://hub.docker.com/r/bitmark/bitmark-node/" base target="_blank" style="color:black">here</a>.',
+                                'content': 'Read more about the Bitmark Node software that allows you to connect to the Bitmark network <a href="https://hub.docker.com/r/bitmark/bitmark-node/" base target="_blank" style="color:black">here</a>.',
                                 'type': 'message',
                             },
                             {
