@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bitmark Node User Interface</title>
+    <script src="main.js"></script>
+    <script src="js/scripts.js"></script>
+    <script src="js/jquery-1.7.1.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/typography.css">
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body>
+    <div class="title-bar">
+      <div class="wc-box-menu">
+        <div class="menu" id="menu"><div class="bar" id="menu"></div></div>
+      </div>
+      <div class="wc-box">
+        <div class="minimize" id="min"></div>
+        <div class="maximize" id="max"></div>
+        <div class="close" id="close"></div>
+      </div>
+    </div>
+
+    <div class="sidenav">
+      <img draggable="false" src="assets/icons/bitmark-logo.svg" class="image-text"/>
+      <hr width="65%">
+      <a onClick="startBitmarkNodeLocal();" style="cursor: pointer; cursor: hand;">Start Container</a>
+      <a onClick="stopBitmarkNodeLocal();" style="cursor: pointer; cursor: hand;">Stop Container</a>
+      <a onClick="restartBitmarkNodeLocal();" style="cursor: pointer; cursor: hand;">Restart Container</a>
+      <hr width="50%">
+      <a onClick="setNetworkBitmark();" style="cursor: pointer; cursor: hand;">Switch to Bitmark</a>
+      <a onClick="setNetworkTesting();" style="cursor: pointer; cursor: hand;">Switch to Testing</a>
+      <hr width="50%">
+      <a onClick="pullUpdate();" style="cursor: pointer; cursor: hand;">Check for Updates</a>
+      <hr width="50%">
+      <a onClick="showPreferences();" style="cursor: pointer; cursor: hand;">Show Preferences</a>
+      <a onClick="refreshWindow();" style="cursor: pointer; cursor: hand;">Refresh Window</a>
+      <hr width="65%">
+      <sub>Bitmark Inc. 2018</sub>
+    </div>
+    <div id="main" class="main"> 
+      <iframe src="http://localhost:9980" class="frame"/></iframe>
+    </div>
+  </body>
+  <script type="text/javascript">
+
+    //Open all external links in browser - Uses JQuery
+    let shell = require('electron').shell
+    $('iframe').load(function(){
+      $(this).contents().find("body").on('click', function(event) { 
+        if (event.target.href.startsWith('https')) {
+          event.preventDefault()
+          shell.openExternal(event.target.href)
+        }
+      });
+    });
+    
+  </script>
+</html>
