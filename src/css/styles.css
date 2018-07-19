@@ -68,7 +68,7 @@ body {
 /* Title Bar */
 .title-bar {
   height: 25px; 
-  background-color: #3b444a;
+  background-color: #293238;
   margin: 0;
   padding: 0;
   -webkit-app-region: drag;
@@ -80,7 +80,7 @@ body {
   position: absolute;
   top: 0px;
   left: 0px;
-  background-color: #3b444a;
+  background-color: #293238;
   cursor: pointer;
 }
 
@@ -121,7 +121,7 @@ body {
   position: absolute;
   top: 0px;
   right: 0px;
-  background-color: #3b444a;
+  background-color: #293238;
   cursor: pointer;
 }
 
