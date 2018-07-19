@@ -1,8 +1,7 @@
 /* TODO
-  1. When setting up the container for the sidebar, the non windows version is called - fix this!
-  2. Add better copy paste options
-  2. MacOS testing
+  1. MacOS testing
 */
+
 
 const electron = require('electron'); //Electron
 const {app, BrowserWindow} = require('electron'); //Electron Default BrowserWindow - Used to display UI
