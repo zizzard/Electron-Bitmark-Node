@@ -1,8 +1,3 @@
-/* TODO
-  1. MacOS testing
-*/
-
-
 const electron = require('electron'); //Electron
 const {app, BrowserWindow} = require('electron'); //Electron Default BrowserWindow - Used to display UI
 const {Menu} = require('electron'); //Electron Default Menu
@@ -65,6 +60,7 @@ app.on('ready', function() {
 		title: "Bitmark Node User Interface",
 		icon: path.join(__dirname, 'assets/icons/app_icon.png'),
     	frame: false,
+    	trasparent: true,
     	darkTheme: true
 	});
 
