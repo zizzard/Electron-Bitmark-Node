@@ -3,7 +3,7 @@
   "productName": "bitmark-node",
   "version": "1.0.0",
   "description": "Bitmark Node User Interface",
-  "productDescription" : "User interface to view and control the Bitmark Node Docker Container. Read more at bitmark.org.",
+  "productDescription": "User interface to view and control the Bitmark Node Docker Container. Read more at bitmark.org.",
   "main": "src/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.1.0",
+    "electron-context-menu": "^0.10.0",
     "electron-preferences": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
     "electron-window-state": "^4.1.1",

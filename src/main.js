@@ -1,5 +1,6 @@
 /* TODO
-  1. Better container switching on Windows
+  1. When setting up the container for the sidebar, the non windows version is called - fix this!
+  2. Add better copy paste options
   2. MacOS testing
 */
 
@@ -27,11 +28,12 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
-//Check if system is windows and if it is set the data dir to appdata folder
-var isWin = process.platform === "win32"; //Check if platform is windows
+//Set dataDirectory
 var dataDir = `${userHome}`;
-if(isWin){
-	dataDir = `${userHome}\\AppData\\Roaming`
+//Check if platform is windows
+if(process.platform === "win32"){
+	//Update to correct Windows User Directory
+	dataDir = `${userHome}\\AppData\\Roaming`;
 }
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -226,50 +228,48 @@ function stopBitmarkNode(){
 function createContainerHelper(){
 	const net = preferences.value('blockchain.network');
 	const dir = preferences.value('directory.folder');
+	var isWin = process.platform === "win32"; //Check if platform is windows
 
 	publicIp.v4().then(ip => {
-	  createContainer(ip, net, dir);
+	  createContainer(ip, net, dir, isWin);
 	});
 }
 
 // Create the container with the network and directory given
-function createContainerHelperIPOnly(net, dir){
+function createContainerHelperIPOnly(net, dir, isWin){
 	publicIp.v4().then(ip => {
-	  createContainer(ip, net, dir);
+	  createContainer(ip, net, dir, isWin);
+	});
+}
+
+function getIP(){
+	publicIp.v4().then(ip => {
+	  newNotification(`${ip}`);
 	});
 }
 
 //Create the docker container
-function createContainer(ip, net, dir){
+function createContainer(ip, net, dir, isWin){
 	directoryCheckHelper(dir);
 
 	//Attempt to remove and stop the container before creating the container.
 	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
-		if (err) {
-			//Continue if failed to remove the container as the container may not exist
-			console.log("Failed to stop container");
-	  	}
-
-		console.log(`${stdout}`);
-
 		exec("docker rm bitmarkNode", (err, stdout, stderr) => {
-	    	if (err) {
-	    		//Continue if failed to remove the container as the container may not exist
-	    		console.log("Failed to remove container");
-	    	}
 
-	    	console.log(`${stdout}`);
-
+			//Use the command suited for the platform
 	    	if(isWin){
+	    		//The windows command is the same as the linux command, except with \\ (\\ to delimit the single backslash) instead of /
+	    		console.log("Windows");
 	    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}\\bitmark-node-data\\db:\\.config\\bitmark-node\\db -v ${dir}\\bitmark-node-data\\data:\\.config\\bitmark-node\\bitmarkd\\bitmark\\data -v ${dir}\\bitmark-node-data\\data-test:\\.config\\bitmark-node\\bitmarkd\\testing\\data bitmark/bitmark-node`
 			}else{
+				console.log("Non-Windows");
 	    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
 	    	}
 	    	
 	    	exec(command, (err, stdout, stderr) => {
 	    		if (err) {
 	        		console.log("Failed to create container");
-	        		newNotification("The Docker container failed to be created. Ensure you're connected to the Internet.");
+	        		newNotification("The Docker container failed to be created. Ensure you're connected to the Internet and Docker is running properly.");
 	        		return;
 	    		}
 
@@ -366,6 +366,15 @@ ipc.on('show-context-menu', function (event) {
   const win = BrowserWindow.fromWebContents(event.sender)
   menu.popup(win)
 })
+
+//Right Click Context Menu (Cut, Copy, Paste)
+require('electron-context-menu')({
+    prepend: (params, browserWindow) => [{
+        label: 'Rainbow',
+        // Only show it when right-clicking images
+        visible: params.mediaType === 'image'
+    }]
+});
 
 //Preferences Menu
 //Get the default data directory

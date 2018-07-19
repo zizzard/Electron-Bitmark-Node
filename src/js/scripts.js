@@ -63,8 +63,9 @@ function createContainerHelperLocal(){
 	const preferences = ipcRenderer.sendSync('getPreferences');
 	var net = preferences.blockchain.network;
 	var dir = preferences.directory.folder;
-	createContainerHelperIPOnly(net, dir)
-}
+	var isWin = remote.getGlobal('process').platform === "win32";
+	createContainerHelperIPOnly(net, dir, isWin)
+};
 
 //Function to handle buttons
 (function () {
