@@ -1,26 +1,28 @@
 # Bitmark-Node User Interface 
 
-[[Client Setup](#Client-Setup-Introduction) | [Developer Setup](#Developer-Setup)]
+[ [Client Setup](#Client-Setup-Introduction) | [Developer Setup](#Developer-Setup) ]
 
 ### Application Screenshot
 ![Application Screenshot](https://i.imgur.com/n0OJz07.png)
 
 
-## Client Setup Introduction
+# Client Setup Introduction
 
 The [Bitmark](https://bitmark.com) node software enables any computer on the Internet to join the Bitmark network as a fully-validating peer. Unlike conventional property systems that rely on a handful of trusted government officials to act as centralized gatekeepers, the Bitmark blockchain is an open and transparent property system that is strengthened through the active participation of anyone on the Internet. The integrity of Bitmark’s open-source blockchain is ensured by a peer-to-peer network of voluntary participants running the Bitmark node software. These participants are incentivized to participate in verifying Bitmark property transactions through the possibility of winning monetary and property rewards.
 
 The Bitmark blockchain is an independent chain, optimized for storing property titles, or *bitmarks*, and does not have its own internal currency (transaction fees are in bitcoin or litecoin). The peer-to-peer network is written in [Go](https://golang.org) and uses the [ZeroMQ distributed messaging library](http://zeromq.org). The consensus is secured using the [Argon2](https://github.com/P-H-C/phc-winner-argon2) hashing algorithm as proof-of-work.
 
+The Bitmark Node User Interface is a desktop application written with the [Electron](https://electronjs.org/) framework. The program gives the user full control over the application, from controlling the container to interacting with the Bitmark node software.
 
 ## Supported Platforms
 
 The Bitmark node software is distributed as a standalone [Docker container](https://www.docker.com/what-container), which supports easy installation on all major platforms including:
 
-- **Desktop devices**, such as [Mac](https://store.docker.com/editions/community/docker-ce-desktop-mac) and [Windows](https://store.docker.com/editions/community/docker-ce-desktop-windows)
+- **Desktop devices**, such as [Mac](https://store.docker.com/editions/community/docker-ce-desktop-mac) and [Windows*](https://store.docker.com/editions/community/docker-ce-desktop-windows)
 - **Linux servers**, such as [CentOS](https://store.docker.com/editions/community/docker-ce-server-centos), [Debian](https://store.docker.com/editions/community/docker-ce-server-debian), [Fedora](https://store.docker.com/editions/community/docker-ce-server-fedora), and [Ubuntu](https://store.docker.com/editions/community/docker-ce-server-ubuntu)
 - **Cloud providers**, such as [AWS](https://store.docker.com/editions/community/docker-ce-aws) and [Azure](https://store.docker.com/editions/community/docker-ce-azure)
 
+<sub>_*Docker for Windows Requires Hyper-V, which is only avaliable on Windows 8 or Windows 10 64-bit 6 Professional, Enterprise, or Education editions._</sub>
 
 ## Contents
 
@@ -34,7 +36,7 @@ The Bitmark node consists of the following software programs:
 
 ## Installation
 
-**To install the Bitmark node software, please complete the following 4 steps:**
+**To install the Bitmark node software, please complete the following 2 steps:**
 
 ### 1. Install Docker
 
@@ -42,8 +44,7 @@ The Bitmark node software is distributed as a standalone [Docker container](http
 
 
 - [Get Docker CE for Mac](https://store.docker.com/editions/community/docker-ce-desktop-mac)
-- [Get Docker Toolbox for Windows 10 Home and Windows 8](https://docs.docker.com/toolbox/toolbox_install_windows)
-- [Get Docker CE for Windows 10 Pro, Education, and Enterprise](https://store.docker.com/editions/community/docker-ce-desktop-windows)
+- [Get Docker CE for Windows](https://store.docker.com/editions/community/docker-ce-desktop-windows)
 - [Get Docker CE for CentOS](https://store.docker.com/editions/community/docker-ce-server-centos)
 - [Get Docker CE for Debian](https://store.docker.com/editions/community/docker-ce-server-debian)
 - [Get Docker CE for Fedora](https://store.docker.com/editions/community/docker-ce-server-fedora)
@@ -51,23 +52,7 @@ The Bitmark node software is distributed as a standalone [Docker container](http
 - [Get Docker CE for AWS](https://store.docker.com/editions/community/docker-ce-aws)
 - [Get Docker CE for Azure](https://store.docker.com/editions/community/docker-ce-azure)
 
-### 2. Download the Bitmark Node
-
-After successfully installing Docker, you can download the Bitmark node software. To do so, first open a command-line terminal or shell application, such as Terminal on the MacOS or Linux, or `cmd.exe` on Windows. Then enter the following command to download the Bitmark node software:
-
-```
-docker pull bitmark/bitmark-node
-```
-
-
-After entering the pull command, the download sequence should begin in the terminal. You will receive the following message after the download is completed successfully:
-
-```
-Status: Downloaded newer image for bitmark/bitmark-node:latest
-```
-
-
-### 3. Run the Bitmark Node
+### 2. Run the Bitmark Node User Interface
 
 #### Download the Bitmark Node User Interface
 - Linux
@@ -76,29 +61,45 @@ Status: Downloaded newer image for bitmark/bitmark-node:latest
 - [Windows](https://github.com/zizzard/Electron-Bitmark-Node-Packages/raw/master/bitmark-node-1.0.0-exe.7z)
 - [MacOS](https://github.com/zizzard/Electron-Bitmark-Node-Packages/raw/master/bitmark-node-1.0.0-darwin-x64.zip)
 
-When the program is start, it will create the Docker container to run the Bitmark Node software. In the program, you will have full control over the Docker container.
+When the program is start, it will create the Docker container to run the Bitmark Node software, please note that this will take some time, as it has to download the Bitmark node software. 
 
 ## User Interface Walkthrough
 
-### Sidebar
-TODO: Add information
+### 1. Login Screen
+![](https://i.imgur.com/b2ozVoE.png)
 
-### Login Screen
-TODO: Update image
-![](https://i.imgur.com/rVLzYj1.png)
+On the login screen, you can either enter your 24-word recovery phrase to log in to an existing account or you're able to create a new account. When you create a new account, you will be assigned a 24-word recovery phrase that will allow you to login to the same account after restarting the Docker container. You will also be prompted to enter a Bitcoin and Litecoin wallet address to allow you to receive any monetary awards for verifying Bitmark property transactions (these address can be changed at any time). If you do not have a Bitcoin or Litecoin wallet, see [here](#Payment-Addresses) for more information.
 
-On the login screen, you can either enter your 24-word recovery phrase to log in to an existing account or you're able to create a new account. When you create a new account, you will be assigned a 24-word recovery phrase that will allow you to login to the same account after restarting the Docker container. You will also be prompted to enter a Bitcoin and Litecoin wallet address to allow you to receive any monetary awards for verifying Bitmark property transactions (these address can be changed at any time). If you do not have a bitcoin or litecoin wallet, see [here](#Payment-Addresses) for more information.
-
-### Startup Screen
-TODO: Update image
-![](https://i.imgur.com/g0OXQwH.png)
+### 2. Startup Screen
+![](https://i.imgur.com/4QgEfcf.png)
 
 On this screen, you can start up the two parts of the Bitmark Node software, ```bitmarkd``` and ```recorderd```. By clicking on the person icon on the top of the screen you can: view your blocks won, write down your recovery phrase, and copy down your account address. By clicking on the three bar drop-down menu you can change your language, and view the Bitmark Node documentation. You can also change your cryptocurrency wallet addresses in the ```Bitmark Wallet``` section.
 
-### Running Screen
-TODO: Update image
-![](https://i.imgur.com/nS0lrJO.png)
+### 3. Running Screen
+![](https://i.imgur.com/37iS2ud.png)
+
 This full-sized menu appears once you start the ```bitmarkd``` software.
+
+
+### Sidebar
+* Start Container
+    * If the container is stopped, this will start the container. It will do nothing if the container is not setup, or already running.
+* Stop Container
+    * If the container is running, this will stop the container. It will do nothing if the container is not setup, or already stopped.
+* Restart Container
+    * This will start the containerif it is not running, or restart the container if it is running. This will apply any updates installed manually.
+* Switch to Bitmark
+    * If the network is set to 'testing', this will restart the container on the 'bitmark' network. If it is already running on 'bitmark', it will do nothing.
+* Switch to Testing
+    * If the network is set to 'bitmark', this will restart the container on the 'testing' network. If it is already running on 'testing', it will do nothing.
+* Check for Updates
+    * Check for updates. If an update is found, it will automatically be installed and the container will restart.
+* Show Preferences
+    * Show the application preferences menu. From here you can manage automatic updates.
+* Refresh Window
+    * Refresh the application window. After initial setup, the container window will not refresh after changes, and must be done manually. 
+
+### Main Application
 
 * Bitmark Node (bitmarkd):
   * ```Status```: Either ```Stopped``` or ```Running```. Describes the state of the ```bitmarkd``` software.
@@ -106,7 +107,7 @@ This full-sized menu appears once you start the ```bitmarkd``` software.
 * Recorder Node (recorderd)
   * ```Status```: Either ```Stopped``` or ```Running```. Describes the state of the ```recorderd``` software.
 * Network ID
-  * TODO
+  * You client's ID on the Bitmark node network.
 * Current Block
   * This displays what the current block your system is on. This can either be the latest block, or the block that it is currently downloading.
 * Transaction Counter
@@ -139,25 +140,6 @@ Bitmark node participants running both `bitmarkd` and `recorderd` are awarded mo
 When the Bitmark node software is first started up, it requires the user to provide a bitcoin and litecoin account address. If you do not have a bitcoin or litecoin wallet, there are many ways to easily get one online. A simple, online solution is [coinbase](https://coinbase.com), though any wallet will work.
 
 
-
-## Updates
-
-**If you turned off automatic updates in your setup script, you can update the Bitmark node software with the following 3 steps:**
-
-### 1. Download Latest Node Version
-
-To update your version of the Bitmark node software, open a command-line terminal or shell application, such as Terminal on the Mac or Linux, `cmd.exe` on Windows 10 Pro or Enterprise, or ```Docker Quickstart Terminal``` on Windows 8 or 10 Home, then enter the following command to download the software update:
-
-```
-docker pull bitmark/bitmark-node
-```
-
-After entering the pull command, the download sequence should begin in the terminal. You will receive the following message after the download is completed successfully:
-
-```
-Status: Downloaded newer image for bitmark/bitmark-node:latest
-```
-
 ### 2. Run Bitmark Node
 
 After the software update has successfully downloaded, you need need to restart the container, though the application sidebar. Once the container succesfully restarts, you will be running the updated software.
@@ -182,7 +164,7 @@ After the software update has successfully downloaded, you need need to restart 
 
 
 
-## Developer Setup
+# Developer Setup
 Built using Electron (v2.0.4) and Electron-Forge (v6.0.0-beta.22)
 
 ### Prerequisite
