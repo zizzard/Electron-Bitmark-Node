@@ -1,6 +1,6 @@
 # Bitmark-Node User Interface 
 
-[[Client Setup](#introduction) | [Developer Setup](#Client-Setup-Introduction) ]
+[[Client Setup](#Client-Setup-Introduction) | [Developer Setup](#Developer-Setup)]
 
 ### Application Screenshot
 ![Application Screenshot](https://i.imgur.com/n0OJz07.png)
@@ -183,7 +183,6 @@ After the software update has successfully downloaded, you need need to restart 
 
 
 ## Developer Setup
-#### Download pre-compiled packages [here](https://github.com/zizzard/Electron-Bitmark-Node-Packages).
 Built using Electron (v2.0.4) and Electron-Forge (v6.0.0-beta.22)
 
 ### Prerequisite
