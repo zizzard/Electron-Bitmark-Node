@@ -1,9 +1,9 @@
 # Bitmark-Node User Interface 
 
-[[Client Setup](#introduction) | [Developer Setup](## Client-Setup-Introduction) ]
+[[Client Setup](#introduction) | [Developer Setup](#Client-Setup-Introduction) ]
 
 ### Application Screenshot
-![Application Screenshot](screenshot.png)
+![Application Screenshot](https://i.imgur.com/n0OJz07.png)
 
 
 ## Client Setup Introduction
