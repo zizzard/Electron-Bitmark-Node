@@ -141,12 +141,14 @@ function containerCheck(){
 	  //If the container is not setup, create it
 	  if (err) {
 	  	createContainerHelper();
+	  	mainWindow.reload();
 	  }
 
 	  //If the container is stopped, start it
 	  var str = stdout.toString().trim();
 	  if(str === "false"){
 		startBitmarkNode_noNotif();
+		mainWindow.reload();
 	  }
 	});
 };
@@ -176,10 +178,9 @@ function startBitmarkNode(){
 	  	    return;
 	  	  }
 
-	  	  newNotification("The Docker container has started. Please refresh your window.");
+	  	  newNotification("The Docker container has started.");
 
 	  	  console.log(`${stdout}`);
-	  	  mainWindow.reload();
 	  	});
 	  }
 	});
@@ -269,7 +270,7 @@ function createContainer(ip, net, dir, isWin){
 	    		}
 
 	    		console.log(`${stdout}`);
-	    		newNotification("The Docker container was created successfully.");
+	    		newNotification("The Docker container was created successfully. Please refresh you window.");
 	    	});
 		});
 	});

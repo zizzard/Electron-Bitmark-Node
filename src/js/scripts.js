@@ -2,6 +2,7 @@ const { ipcRenderer, remote } = require('electron');
 
 function startBitmarkNodeLocal(){
 	startBitmarkNode();
+	refreshFrame();
 };
 
 function stopBitmarkNodeLocal(){
@@ -13,10 +14,16 @@ function restartBitmarkNodeLocal(){
 	createContainerHelperLocal();
 };
 
+//Refreshes
 function refreshWindow(){
 	var window = remote.getCurrentWindow();
 	window.reload();
 }
+
+//Reloads the iFrame
+function refreshFrame() {
+   document.getElementsByTagName('iframe')[0].src=document.getElementsByTagName('iframe')[0].src
+};
 
 function showPreferences(){
 	// Display the preferences window
@@ -64,7 +71,7 @@ function createContainerHelperLocal(){
 	var net = preferences.blockchain.network;
 	var dir = preferences.directory.folder;
 	var isWin = remote.getGlobal('process').platform === "win32";
-	createContainerHelperIPOnly(net, dir, isWin)
+	var wait = createContainerHelperIPOnly(net, dir, isWin);
 };
 
 //Function to handle buttons
