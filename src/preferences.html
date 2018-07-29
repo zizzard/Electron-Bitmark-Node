@@ -34,12 +34,12 @@
         <div class="header">How would you like to check for updates?</div>
         <!--<div style="padding-left: 2%;"><label class="switch"><input type="checkbox" id="togBtn"><div class="slider round"></div></label></div>-->
         <div id="radio" class="text">
-          <input type="radio" id="automatic" name="update" value="automatic">
+          <input type="radio" id="automatic" name="update" value="automatic" onchange="clickAutomatic()">
           <label for="automatic">Automatically check for updates</label>
               
           &nbsp;
 
-          <input type="radio" id="manual" name="update" value="manual">
+          <input type="radio" id="manual" name="update" value="manual" onchange="clickManual()">
           <label for="manual">Manually check for updates</label>
         </div>
         <div class="subtext">Note: If an update is found, it will be installed automatically</div> 
@@ -67,6 +67,26 @@
     </div>
   </body>
   <script type="text/javascript">
+
+    const { ipcRenderer, remote } = require('electron');
+
+    function clickAutomatic(){
+      console.log("Automatic");
+
+      // Fetch the preferences JSON object
+      const preferences = ipcRenderer.sendSync('getPreferences');
+      preferences.blockchain.network = "automatic";
+      ipcRenderer.sendSync('setPreferences', {...preferences});
+    };
+
+    function clickManual(){
+      console.log("Manual");
+
+      // Fetch the preferences JSON object
+      const preferences = ipcRenderer.sendSync('getPreferences');
+      preferences.blockchain.network = "manual";
+      ipcRenderer.sendSync('setPreferences', {...preferences});
+    };
 
     //Captures update button - Uses JQuery
     $(document).ready(function(){
