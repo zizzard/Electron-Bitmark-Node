@@ -32,7 +32,7 @@ if(process.platform === "win32"){
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
+let mainWindow, prefWindow;
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -73,6 +73,7 @@ app.on('ready', function() {
 	  // in an array if your app supports multi windows, this is the time
 	  // when you should delete the corresponding element.
 	  mainWindow = null;
+	  app.quit();
 	});
 
 	// Let us register listeners on the window, so we can update the state
@@ -105,6 +106,32 @@ app.on('activate', () => {
 
 /* User Interface Functions */
 
+//Create the preferences window
+function createPreferencesWindow(){
+
+	//Define the preferences window
+	prefWindow = new BrowserWindow({
+		width: 1000,
+		height: 600,
+		title: "Preferences",
+		icon: path.join(__dirname, 'assets/icons/app_icon.png'),
+    	frame: false,
+    	trasparent: true,
+    	darkTheme: true
+	});
+
+	//load the preferences file
+	prefWindow.loadURL(`file://${__dirname}/preferences.html`);
+
+	// Emitted when the window is closed.
+	prefWindow.on('closed', () => {
+	  // Dereference the window object, usually you would store windows
+	  // in an array if your app supports multi windows, this is the time
+	  // when you should delete the corresponding element.
+	  prefWindow = null;
+	});
+};
+
 //Display notification with str text
 function newNotification(str){
 	notifier.notify(
@@ -120,6 +147,7 @@ function newNotification(str){
 
 //Pull update if auto_update is on
 function autoUpdateCheck(){
+	//get the auto update value
 	const auto_update = preferences.value('update.auto_update');
 	if(auto_update == true){
 		console.log("Checking for updates with auto updater");
@@ -130,13 +158,14 @@ function autoUpdateCheck(){
 
 /* Terminal Calling Functions */
 
-/* Ran on startup and checks the status of the container
-    1. If the container is not setup, it creates it
-    2. If the container is not start, it starts it
-    3. If the container is running, it does nothing
-*/
+// Ran on startup and checks the status of the container
+//  1. If the container is not setup, it creates it
+//  2. If the container is not start, it starts it
+//  3. If the container is running, it does nothing
+
 function containerCheck(){
 
+	//Get the container status of bitmarkNode
 	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
 	  //If the container is not setup, create it
 	  if (err) {
@@ -156,6 +185,7 @@ function containerCheck(){
 // Start the bitmarkNode Docker container
 function startBitmarkNode(){
 
+	//Get the container status of bitmarkNode
 	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
 	  //If the container is not setup, create it
 	  if (err) {
@@ -170,6 +200,7 @@ function startBitmarkNode(){
 	  	console.log("Container already running.");
 	  	newNotification("The Docker container is already running.");
 	  }else{
+	  	//Start the container named bitmarkNode
 	  	exec("docker start bitmarkNode", (err, stdout, stderr) => {
 	  	  if (err) {
 	  	    // node couldn't execute the command
@@ -188,6 +219,7 @@ function startBitmarkNode(){
 
 // Start the bitmarkNode Docker container without a notification
 function startBitmarkNode_noNotif(){
+	//Start the container named bitmarkNode
 	exec("docker start bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
@@ -196,6 +228,7 @@ function startBitmarkNode_noNotif(){
 	  }
 
 	  console.log(`${stdout}`);
+	  //Reload mainWindow
 	  mainWindow.reload();
 	});
 };
@@ -205,6 +238,7 @@ function stopBitmarkNode(){
 	
 	newNotification("Stopping the Docker container. This may take some time.");
 
+	//Stop the container named bitmarkNode
 	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
@@ -215,6 +249,7 @@ function stopBitmarkNode(){
 
 	  console.log(`${stdout}`);
 	  newNotification("The Docker container has stopped.");
+	  //Reloads mainWindow
 	  mainWindow.reload();
 	});
 };
@@ -222,10 +257,12 @@ function stopBitmarkNode(){
 
 //Create the container with no information given
 function createContainerHelper(){
+	//Get network and directory from preferences json file
 	const net = preferences.value('blockchain.network');
 	const dir = preferences.value('directory.folder');
 	var isWin = process.platform === "win32"; //Check if platform is windows
 
+	//Get the users public IP
 	publicIp.v4().then(ip => {
 	  createContainer(ip, net, dir, isWin);
 	});
@@ -233,19 +270,15 @@ function createContainerHelper(){
 
 // Create the container with the network and directory given
 function createContainerHelperIPOnly(net, dir, isWin){
+	//Get the users public IP
 	publicIp.v4().then(ip => {
 	  createContainer(ip, net, dir, isWin);
 	});
 }
 
-function getIP(){
-	publicIp.v4().then(ip => {
-	  newNotification(`${ip}`);
-	});
-}
-
 //Create the docker container
 function createContainer(ip, net, dir, isWin){
+	//Check to make sure the needed directories exist
 	directoryCheckHelper(dir);
 
 	//Attempt to remove and stop the container before creating the container.
@@ -262,6 +295,7 @@ function createContainer(ip, net, dir, isWin){
 	    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
 	    	}
 	    	
+	    	//Run the command
 	    	exec(command, (err, stdout, stderr) => {
 	    		if (err) {
 	        		console.log("Failed to create container");
@@ -283,6 +317,7 @@ function pullUpdate(){
 
 	newNotification("Checking for updates. This may take some time.");
 
+	//Pull updates from the docker bitmark-node repo
 	exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
 	  if (err) {
 	    // node couldn't execute the command
@@ -291,13 +326,15 @@ function pullUpdate(){
 	    return;
 	  }
 
+	  //get the output
 	  var str = stdout.toString();
 
-	  //Check to see if the up to date/updated text is present
+	  //Check to see if the up to date text is present
 	  if(str.indexOf("Image is up to date for bitmark/bitmark-node") !== -1){
 	  	console.log("No Updates");
 	  	newNotification("No updates to the Bitmark Node software have been found.");
 	  }
+	  //Check to see if the updated text is present
 	  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node") !== -1){
 	  	console.log("Updated");
 	  	newNotification("The Bitmark Node software has downloaded. Installing updates now.");
@@ -314,6 +351,7 @@ function pullUpdate(){
 
 //Check to see if dir is defined and if not create it
 function directoryCheck(dir){
+	//If the directory doesn't exist, create it
 	if (!fs.existsSync(dir)){
 	    fs.mkdirSync(dir);
 	    console.log(`The directory ${dir} does not exist. Creating it now.`);
@@ -325,13 +363,14 @@ function directoryCheck(dir){
 //Check directories
 function directoryCheckHelper(dir){
 
+	//Get each directory and store it in a variable
 	const folder = dir;
+	var bitmarknode = `${folder}/bitmark-node-data`;
+	var db = `${bitmarknode}/db`;
+	var data = `${bitmarknode}/data`;
+	var datatest = `${bitmarknode}/data-test`;
 
-	bitmarknode = `${folder}/bitmark-node-data`;
-	db = `${bitmarknode}/db`;
-	data = `${bitmarknode}/data`;
-	datatest = `${bitmarknode}/data-test`;
-
+	//Pass each variable to directoryCheck
 	directoryCheck(bitmarknode);
 	directoryCheck(db);
 	directoryCheck(data);
@@ -340,7 +379,7 @@ function directoryCheckHelper(dir){
 
 //Create the file submenu
 var fileMenu = new Menu()
-fileMenu.append(new MenuItem({ label: 'Preferences', click() { preferences.show(); }}))
+fileMenu.append(new MenuItem({ label: 'Preferences', click() { createPreferencesWindow(); }}))
 fileMenu.append(new MenuItem({ role: 'quit' }))
 
 //create the view submenu
@@ -383,16 +422,6 @@ const preferences = new ElectronPreferences({
      * Default values.
      */
     'defaults': {
-        'markdown': {
-            'auto_format_links': true,
-            'show_gutter': false
-        },
-        'preview': {
-            'show': true
-        },
-        'drawer': {
-            'show': true
-        },
         "blockchain": {
             "network": "bitmark"
         },

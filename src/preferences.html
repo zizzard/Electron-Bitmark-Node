@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Preferences</title>
     <script src="main.js"></script>
-    <script src="js/scripts.js"></script>
+    <script src="js/pref_scripts.js"></script>
     <script src="js/jquery-1.7.1.js"></script>
     <link rel="stylesheet" type="text/css" href="css/typography.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -32,7 +32,6 @@
         <div class="title">UPDATE SETTINGS</div>
         <hr style="border: .75px dashed black; width:95%;">
         <div class="header">How would you like to check for updates?</div>
-        <!--<div style="padding-left: 2%;"><label class="switch"><input type="checkbox" id="togBtn"><div class="slider round"></div></label></div>-->
         <div id="radio" class="text">
           <input type="radio" id="automatic" name="update" value="automatic" onchange="clickAutomatic()">
           <label for="automatic">Automatically check for updates</label>
@@ -68,35 +67,33 @@
   </body>
   <script type="text/javascript">
 
-    const { ipcRenderer, remote } = require('electron');
+    //On loading the page, set the preferences
+    window.onload = function() {
+        // Fetch the preferences JSON object
+        const preferences = ipcRenderer.sendSync('getPreferences');
+        var update = preferences.update.auto_update;
 
-    function clickAutomatic(){
-      console.log("Automatic");
-
-      // Fetch the preferences JSON object
-      const preferences = ipcRenderer.sendSync('getPreferences');
-      preferences.blockchain.network = "automatic";
-      ipcRenderer.sendSync('setPreferences', {...preferences});
-    };
-
-    function clickManual(){
-      console.log("Manual");
-
-      // Fetch the preferences JSON object
-      const preferences = ipcRenderer.sendSync('getPreferences');
-      preferences.blockchain.network = "manual";
-      ipcRenderer.sendSync('setPreferences', {...preferences});
+        //Set the radio button to clicked for whatever the current setting is
+        if(update){
+          radiobtn = document.getElementById("automatic");
+          radiobtn.checked = true;
+        }else{
+          radiobtn = document.getElementById("manual");
+          radiobtn.checked = true;
+        }
     };
 
     //Captures update button - Uses JQuery
     $(document).ready(function(){
         $('#updateButton').click(function(){
+          //Get about and update buttons and set about as inactive, update as active (CSS)
           var about = document.getElementById("aboutButton");
           var update = document.getElementById("updateButton");
 
           about.className="inactive";
           update.className="active";
 
+          //Hides about div and shows update div
           $("#update").show();
           $("#about").hide();
         });
@@ -105,27 +102,24 @@
     //Captures about button - Uses JQuery
     $(document).ready(function(){
         $('#aboutButton').click(function(){
-         
+         //Get about and update buttons and set about as active, update as inactive (CSS)
           var about = document.getElementById("aboutButton");
           var update = document.getElementById("updateButton");
 
           about.className="active";
           update.className="inactive";
 
-          $("#update").hide();
+          //Hides update div and shows about div
           $("#about").show();
+          $("#update").hide();
         });
     });
 
     //Open all external links in browser - Uses JQuery
-    let shell = require('electron').shell
-    $('iframe').load(function(){
-      $(this).contents().find("body").on('click', function(event) { 
-        if (event.target.href.startsWith('https')) {
-          event.preventDefault()
-          shell.openExternal(event.target.href)
-        }
-      });
+    let shell = require('electron').shell;
+    $(document).on('click', 'a[href^="http"]', function(event) {
+        event.preventDefault();
+        shell.openExternal(this.href);
     });
     
   </script>
