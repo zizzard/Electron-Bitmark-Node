@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Preferences</title>
+    <script src="main.js"></script>
+    <script src="js/scripts.js"></script>
+    <script src="js/jquery-1.7.1.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/typography.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/pref_styles.css">
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <div class="title-bar">
+      <div class="wc-box">
+        <div class="minimize" id="min"></div>
+        <div class="maximize" id="max"></div>
+        <div class="close" id="close"></div>
+      </div>
+    </div>
+
+    <div class="sidenavPref">
+      <div class="vertical-menu">
+        <a href="#" id="updateButton" class="active">Update Settings</a>
+        <a href="#" id="aboutButton" class="inactive">About</a>
+      </div>
+    </div>
+    <div class="main"> 
+      <div id="update">
+        <div class="title">UPDATE SETTINGS</div>
+        <hr style="border: .75px dashed black; width:95%;">
+        <div class="header">How would you like to check for updates?</div>
+        <!--<div style="padding-left: 2%;"><label class="switch"><input type="checkbox" id="togBtn"><div class="slider round"></div></label></div>-->
+        <div id="radio" class="text">
+          <input type="radio" id="automatic" name="update" value="automatic" onchange="clickAutomatic()">
+          <label for="automatic">Automatically check for updates</label>
+              
+          &nbsp;
+
+          <input type="radio" id="manual" name="update" value="manual" onchange="clickManual()">
+          <label for="manual">Manually check for updates</label>
+        </div>
+        <div class="subtext">Note: If an update is found, it will be installed automatically</div> 
+      </div>
+
+      <div id="about" hidden="true">
+        <div class="title">ABOUT</div>
+        <hr style="border: .75px dashed black; width:95%;">
+        <div class="header">Description</div>
+        <hr style="border: .5px dashed grey; width:95%;">
+        <div class="text">The Bitmark node software enables any computer on the Internet to join the Bitmark network as a fully-validating peer. The Bitmark blockchain is an independent chain, optimized for storing property titles, or bitmarks, and does not have its own internal currency (transaction fees are in bitcoin or litecoin). The peer-to-peer network is written in Go and uses the ZeroMQ distributed messaging library. Consensus is secured using the Argon2 hashing algorithm as proof-of-work.</div>
+        
+        &nbsp;
+
+        <div class="header">Container</div>
+        <hr style="border: .5px dashed grey; width:95%;">
+        <div class="text">Read more about the Bitmark Node software that allows you to connect to the Bitmark network <a href="https://hub.docker.com/r/bitmark/bitmark-node/" base target="_blank" style="color:black">here</a>.</div>
+       
+        &nbsp;
+
+        <div class="header">Electron</div>
+        <hr style="border: .5px dashed grey; width:95%;">
+        <div class="text">Read more about the Electron Framework used to build this application <a href="https://electronjs.org/" base target="_blank" style="color:black">here</a>.</div>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript">
+
+    const { ipcRenderer, remote } = require('electron');
+
+    function clickAutomatic(){
+      console.log("Automatic");
+
+      // Fetch the preferences JSON object
+      const preferences = ipcRenderer.sendSync('getPreferences');
+      preferences.blockchain.network = "automatic";
+      ipcRenderer.sendSync('setPreferences', {...preferences});
+    };
+
+    function clickManual(){
+      console.log("Manual");
+
+      // Fetch the preferences JSON object
+      const preferences = ipcRenderer.sendSync('getPreferences');
+      preferences.blockchain.network = "manual";
+      ipcRenderer.sendSync('setPreferences', {...preferences});
+    };
+
+    //Captures update button - Uses JQuery
+    $(document).ready(function(){
+        $('#updateButton').click(function(){
+          var about = document.getElementById("aboutButton");
+          var update = document.getElementById("updateButton");
+
+          about.className="inactive";
+          update.className="active";
+
+          $("#update").show();
+          $("#about").hide();
+        });
+    });
+
+    //Captures about button - Uses JQuery
+    $(document).ready(function(){
+        $('#aboutButton').click(function(){
+         
+          var about = document.getElementById("aboutButton");
+          var update = document.getElementById("updateButton");
+
+          about.className="active";
+          update.className="inactive";
+
+          $("#update").hide();
+          $("#about").show();
+        });
+    });
+
+    //Open all external links in browser - Uses JQuery
+    let shell = require('electron').shell
+    $('iframe').load(function(){
+      $(this).contents().find("body").on('click', function(event) { 
+        if (event.target.href.startsWith('https')) {
+          event.preventDefault()
+          shell.openExternal(event.target.href)
+        }
+      });
+    });
+    
+  </script>
+</html>
