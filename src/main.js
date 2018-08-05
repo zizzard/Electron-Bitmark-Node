@@ -111,7 +111,7 @@ function createPreferencesWindow(){
 
 	//Define the preferences window
 	prefWindow = new BrowserWindow({
-		width: 1000,
+		width: 850,
 		height: 600,
 		title: "Preferences",
 		icon: path.join(__dirname, 'assets/icons/app_icon.png'),

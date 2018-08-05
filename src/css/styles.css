@@ -7,15 +7,14 @@ body {
 /* IFrame to display Bitmark Node */
 .frame {
   display: block;
-  width: 82.5vw;
+  width: calc(100% - 225px);
   height: 100vh;
-  max-width: 82.5%;
   margin: 0;
   padding: 0;
   border: 0 none;
   box-sizing: border-box;
   overflow:hidden;
-  left:17.5%;
+  left:225px;
   position:fixed;
   top: 25px;
   user-select: none;
@@ -24,7 +23,7 @@ body {
 /* The sidebar menu */
 .sidenav {
   height: 100%; /* Full-height: remove this if you want "auto" height */
-  width: 17.5%; /* Set the width of the sidebar */
+  width: 225px; /* Set the width of the sidebar */
   position: fixed; /* Fixed Sidebar (stay in place on scroll) */
   z-index: 1; /* Stay on top */
   top: 0; /* Stay at the top */

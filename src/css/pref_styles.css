@@ -44,14 +44,14 @@ body {
 
 .main {
   display: block;
-  width: 85vh;
+  width: calc(100% - 150px);
   height: 100vh;
   max-width: 85%;
   margin: 0;
   border: 0 none;
   box-sizing: border-box;
   overflow:hidden;
-  left:15%;
+  left:150px;
   padding-left: 8px;
   position:fixed;
   top: 35px;
@@ -62,7 +62,7 @@ body {
 /* The sidebar menu */
 .sidenavPref {
   height: 100%; /* Full-height: remove this if you want "auto" height */
-  width: 15%; /* Set the width of the sidebar */
+  width: 150px; /* Set the width of the sidebar */
   position: fixed; /* Fixed Sidebar (stay in place on scroll) */
   z-index: 1; /* Stay on top */
   top: 0; /* Stay at the top */
