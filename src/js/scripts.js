@@ -28,8 +28,10 @@ function createPreferencesWindowLocal(){
 
 	//define the window
 	var prefWindow = new BrowserWindow({
-		width: 1000,
+		width: 850,
 		height: 600,
+		minWidth: 735,
+		minHeight: 500,
 		title: "Preferences",
 		icon: path.join(__dirname, 'assets/icons/app_icon.png'),
     	frame: false,

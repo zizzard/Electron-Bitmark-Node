@@ -12,6 +12,7 @@ body {
   color: black;
   display: block;
   padding-left: 2%;
+  padding-right: 2%;
 }
 
 .header {
@@ -21,6 +22,7 @@ body {
   color: black;
   display: block;
   padding-left: 2%;
+  padding-right: 2%;
 }
 
 .text {
@@ -30,6 +32,7 @@ body {
   color: black;
   display: block;
   padding-left: 2%;
+  padding-right: 2%;
   text-decoration: none;
 }
 
@@ -40,6 +43,7 @@ body {
   color: #4E4E4E;
   display: block;
   padding-left: calc(2% + 25px);
+  padding-right: calc(2% + 25px);
 }
 
 .main {
@@ -53,6 +57,7 @@ body {
   overflow:hidden;
   left:150px;
   padding-left: 8px;
+  padding-right: 8px;
   position:fixed;
   top: 35px;
   user-select: none;
