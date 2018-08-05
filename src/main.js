@@ -403,9 +403,9 @@ fileMenu.append(new MenuItem({ role: 'quit' }))
 var viewMenu = new Menu()
 viewMenu.append(new MenuItem({ label: 'Reload', accelerator: 'CmdOrCtrl+R', click (item, focusedWindow) { if (focusedWindow) focusedWindow.reload(); }}))
 viewMenu.append(new MenuItem({ type: 'separator' }))
-viewMenu.append(new MenuItem({ role: 'resetzoom' }))
-viewMenu.append(new MenuItem({ role: 'zoomin' }))
-viewMenu.append(new MenuItem({ role: 'zoomout' }))
+viewMenu.append(new MenuItem({ role: 'resetzoom', accelerator: 'CmdOrCtrl+0' }))
+viewMenu.append(new MenuItem({ role: 'zoomin', accelerator: 'CmdOrCtrl+Shift+=' }))
+viewMenu.append(new MenuItem({ role: 'zoomout', accelerator: 'CmdOrCtrl+-' }))
 
 //Create the main menu
 var menu = new Menu()
@@ -417,13 +417,7 @@ menu.append(new MenuItem({ label: 'About', click() { electron.shell.openExternal
 ipc.on('show-context-menu', function (event) {
   const win = BrowserWindow.fromWebContents(event.sender)
   menu.popup(win)
-})
+});
 
 //Right Click Context Menu (Cut, Copy, Paste)
-require('electron-context-menu')({
-    prepend: (params, browserWindow) => [{
-        label: 'Rainbow',
-        // Only show it when right-clicking images
-        visible: params.mediaType === 'image'
-    }]
-});
+require('electron-context-menu')({});
