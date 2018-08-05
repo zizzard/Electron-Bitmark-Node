@@ -58,15 +58,14 @@ function refreshFrame() {
 
 //Changes the network to Bitmark if it current isn't on it
 function setNetworkBitmark(){
-	// Fetch the preferences JSON object
-	const preferences = ipcRenderer.sendSync('getPreferences');
-	var network = preferences.blockchain.network;
+	// Fetch the user's preferred network
+	const settings = require('electron').remote.require('electron-settings');
+	var network = settings.get('network');
 
 	//Checks the network
 	if(network === "testing"){
-		//Update preferences json
-		preferences.blockchain.network = "bitmark";
-		ipcRenderer.sendSync('setPreferences', {...preferences});
+		//Update network
+		settings.set('network', 'bitmark');
 
 		console.log("Changing to bitmark");
 		
@@ -84,15 +83,14 @@ function setNetworkBitmark(){
 
 //Changes the network to testing if it current isn't on it
 function setNetworkTesting(){
-	// Fetch the preferences JSON object
-	const preferences = ipcRenderer.sendSync('getPreferences');
-	var network = preferences.blockchain.network;
+	// Fetch the user's preferred network
+	const settings = require('electron').remote.require('electron-settings');
+	var network = settings.get('network');
 
 	//Checks the network
 	if(network === "bitmark"){
-		//Update preferences json
-		preferences.blockchain.network = "testing";
-		ipcRenderer.sendSync('setPreferences', {...preferences});
+		//Update network
+		settings.set('network', 'testing');
 
 		console.log("Changing to testing");
 		
@@ -110,10 +108,10 @@ function setNetworkTesting(){
 
 //Get the network and directory and pass it to the main function to get the IP then create the container
 function createContainerHelperLocal(){
-	//Get the network and directory from preferences
-	const preferences = ipcRenderer.sendSync('getPreferences');
-	var net = preferences.blockchain.network;
-	var dir = preferences.directory.folder;
+	//Get the network and directory from settings
+	const settings = require('electron').remote.require('electron-settings');
+	var net = settings.get('network');
+	var dir = settings.get('directory');;
 
 	//Get if the computer is a windows computer
 	var isWin = remote.getGlobal('process').platform === "win32";

@@ -1,19 +1,15 @@
-const { ipcRenderer, remote } = require('electron');
-
 //When the manual update button is clicked, update the users preferences
 function clickAutomatic(){
-	// Fetch the preferences JSON object
-	const preferences = ipcRenderer.sendSync('getPreferences');
-	preferences.update.auto_update = true;
-	ipcRenderer.sendSync('setPreferences', {...preferences});
+  // Fetch the user's settings and set auto_update to true
+	const settings = require('electron').remote.require('electron-settings');
+  settings.set('auto_update', true);
 };
 
 //When the manual update button is clicked, update the users preferences
 function clickManual(){
-	// Fetch the preferences JSON object
-	const preferences = ipcRenderer.sendSync('getPreferences');
-	preferences.update.auto_update = false;
-	ipcRenderer.sendSync('setPreferences', {...preferences});
+  // Fetch the user's settings and set auto_update to false
+  const settings = require('electron').remote.require('electron-settings');
+  settings.set('auto_update', false);
 };
 
 //Function to handle buttons

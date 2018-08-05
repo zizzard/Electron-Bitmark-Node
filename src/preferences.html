@@ -67,9 +67,9 @@
 
     //On loading the page, set the preferences
     window.onload = function() {
-        // Fetch the preferences JSON object
-        const preferences = ipcRenderer.sendSync('getPreferences');
-        var update = preferences.update.auto_update;
+        // Fetch the auto update settings
+        const settings = require('electron').remote.require('electron-settings');
+        var update = settings.get('auto_update');
 
         //Set the radio button to clicked for whatever the current setting is
         if(update){

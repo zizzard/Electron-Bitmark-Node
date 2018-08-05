@@ -1,21 +1,20 @@
+//Default imports
 const electron = require('electron'); //Electron
-const {app, BrowserWindow} = require('electron'); //Electron Default BrowserWindow - Used to display UI
+const {app, BrowserWindow} = require('electron'); //Used to display windows
 const {Menu} = require('electron'); //Electron Default Menu
 const MenuItem = electron.MenuItem //Electron Menu Item - Context Menu
-const path = require('path'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
-const os = require('os'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
-const ElectronPreferences = require('electron-preferences'); //Electron-Preferences (https://github.com/tkambler/electron-preferences)
+const ipc = electron.ipcMain //IPC used to display context menu (hamburger menu)
+const path = require('path'); //Used to interact with file paths
+const os = require('os'); //Used to determine the user's current OS
+var fs = require('fs'); //Used to check to see if directories exist/create ones
+
+//Packages (Name - Use (Link))
+const settings = require('electron-settings'); //Electron-Settings - Used to store user settings (https://github.com/nathanbuchar/electron-settings)
 const publicIp = require('public-ip'); //Public-IP - Used to get external IP address (https://github.com/sindresorhus/public-ip)
 const notifier = require('node-notifier'); //Notifications (https://www.npmjs.com/package/node-notifier)
 const { exec } = require('child_process'); //Electron Default Child Process - Used to run CLI commands
 const windowStateKeeper = require('electron-window-state'); //Electron-Window-State - Keep window state from instances of program (https://www.npmjs.com/package/electron-window-state)
-const ipc = electron.ipcMain //IPC used to display context menu (hamburger menu)
-
-var fs = require('fs'); //Used to check to see if directories exist/create ones
-var userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
-
-//Get the location of the preferences file
-const prefLoc = path.resolve(app.getPath('userData'), 'preferences.json');
+const userHome = require('user-home'); //User-Home (https://github.com/sindresorhus/user-home)
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -41,6 +40,9 @@ app.on('ready', function() {
 
 	//On application start-up, run containerCheck
 	containerCheck();
+
+	//Ensure settings are initialized on startup
+	settingSetup();
 
 	// Load the previous state with fallback to defaults
 	let mainWindowState = windowStateKeeper({
@@ -84,6 +86,20 @@ app.on('ready', function() {
 	//Check for check for updates if auto update is on after 2 seconds
 	setTimeout(autoUpdateCheck, 2000);
 });
+
+function settingSetup(){
+	if(settings.get('network') === undefined){
+		settings.set('network', 'bitmark');
+	}
+
+	if(settings.get('auto_update') === undefined){
+		settings.set('auto_update', true);
+	}
+
+	if(settings.get('directory') === undefined){
+		settings.set('directory', dataDir);
+	}
+};
 
 
 // Quit when all windows are closed.
@@ -150,8 +166,8 @@ function newNotification(str){
 //Pull update if auto_update is on
 function autoUpdateCheck(){
 	//get the auto update value
-	const auto_update = preferences.value('update.auto_update');
-	if(auto_update == true){
+	const auto_update = settings.get('auto_update');
+	if(auto_update === true){
 		console.log("Checking for updates with auto updater");
 		pullUpdate();
 	}
@@ -256,12 +272,11 @@ function stopBitmarkNode(){
 	});
 };
 
-
 //Create the container with no information given
 function createContainerHelper(){
-	//Get network and directory from preferences json file
-	const net = preferences.value('blockchain.network');
-	const dir = preferences.value('directory.folder');
+	//Get network and directory from the user's settings
+	const net = settings.get('network');
+	const dir = settings.get('directory');
 	var isWin = process.platform === "win32"; //Check if platform is windows
 
 	//Get the users public IP
@@ -411,103 +426,4 @@ require('electron-context-menu')({
         // Only show it when right-clicking images
         visible: params.mediaType === 'image'
     }]
-});
-
-//Preferences Menu
-//Get the default data directory
-const preferences = new ElectronPreferences({
-    /**
-     * Where should preferences be saved?
-     */
-    'dataStore': prefLoc,
-    /**
-     * Default values.
-     */
-    'defaults': {
-        "blockchain": {
-            "network": "bitmark"
-        },
-        "update": {
-            "auto_update": true
-        },
-        "directory": {
-            "folder": dataDir
-        },
-    },
-    /**
-     * If the `onLoad` method is specified, this function will be called immediately after
-     * preferences are loaded for the first time. The return value of this method will be stored as the
-     * preferences object.
-     */
-    'onLoad': (preferences) => {
-        // ...
-        return preferences;
-    },
-    /**
-     * The preferences window is divided into sections. Each section has a label, an icon, and one or
-     * more fields associated with it. Each section should also be given a unique ID.
-     */
-    'sections': [
-        {
-            'id': 'update',
-            'label': 'Update Settings',
-            'icon': 'square-download',
-            'form': {
-                'groups': [
-                    {
-                        /**
-                         * Group heading is optional.
-                         */
-                        'label': 'Update Settings',
-                        'fields': [
-                            {
-                                'label': 'How would you like to check for updates?',
-                                'key': 'auto_update',
-                                'type': 'radio',
-                                'options': [
-                                    {'label': 'Automatically check for updates', 'value': true},
-                                    {'label': 'Manually check for updates', 'value': false},
-                                ],
-                                'help': 'Note: If an update is found, it will automatically be installed.'
-                            },
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            'id': 'about',
-            'label': 'About',
-            'icon': 'badge-13',
-            'form': {
-                'groups': [
-                    {
-                        'label': 'About Bitmark Node',
-                        'fields': [
-                        	{
-                        	    'label': 'description',
-                        	    'heading': 'Description',
-                        	    'content': "<p>The Bitmark node software enables any computer on the Internet to join the Bitmark network as a fully-validating peer.\
-                        	                   The Bitmark blockchain is an independent chain, optimized for storing property titles, or bitmarks, and does not have its own internal currency (transaction fees are in bitcoin or litecoin).\
-                        	                   The peer-to-peer network is written in Go and uses the ZeroMQ distributed messaging library. Consensus is secured using the Argon2 hashing algorithm as proof-of-work.</p>",
-                        	    'type': 'message',
-                        	},
-                            {
-                                'label': 'container',
-                                'heading': 'Bitmark Node Docker Container',
-                                'content': 'Read more about the Bitmark Node software that allows you to connect to the Bitmark network <a href="https://hub.docker.com/r/bitmark/bitmark-node/" base target="_blank" style="color:black">here</a>.',
-                                'type': 'message',
-                            },
-                            {
-                                'label': 'electron',
-                                'heading': 'Electron',
-                                'content': 'Read more about the Electron Framework used to build this application <a href="https://electronjs.org/" base target="_blank" style="color:black">here</a>.',
-                                'type': 'message',
-                            },
-                        ]
-                    }
-                ]
-            }
-        }
-    ]
 });
