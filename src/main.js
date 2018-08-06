@@ -24,7 +24,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 //Set dataDirectory
 var dataDir = `${userHome}`;
 //Check if platform is windows
-if(process.platform === "win32"){
+var isWin = process.platform === "win32";
+if(isWin){
 	//Update to correct Windows User Directory
 	dataDir = `${userHome}\\AppData\\Roaming`;
 }
@@ -87,21 +88,6 @@ app.on('ready', function() {
 	setTimeout(autoUpdateCheck, 2000);
 });
 
-function settingSetup(){
-	if(settings.get('network') === undefined){
-		settings.set('network', 'bitmark');
-	}
-
-	if(settings.get('auto_update') === undefined){
-		settings.set('auto_update', true);
-	}
-
-	if(settings.get('directory') === undefined){
-		settings.set('directory', dataDir);
-	}
-};
-
-
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
@@ -161,6 +147,13 @@ function newNotification(str){
 			wait: false
 		}
 	);
+};
+
+//Check to see if settings are initialized
+function settingSetup(){
+	if(settings.get('network') === undefined){ settings.set('network', 'bitmark'); }
+	if(settings.get('auto_update') === undefined){ settings.set('auto_update', true); }
+	if(settings.get('directory') === undefined){ settings.set('directory', dataDir); }
 };
 
 //Pull update if auto_update is on
@@ -277,20 +270,46 @@ function createContainerHelper(){
 	//Get network and directory from the user's settings
 	const net = settings.get('network');
 	const dir = settings.get('directory');
-	var isWin = process.platform === "win32"; //Check if platform is windows
-
-	//Get the users public IP
-	publicIp.v4().then(ip => {
-	  createContainer(ip, net, dir, isWin);
-	});
+	
+	//Pass net dir and isWin to last helper
+	createContainerHelperIPOnly(net, dir, isWin);
 }
 
 // Create the container with the network and directory given
 function createContainerHelperIPOnly(net, dir, isWin){
-	//Get the users public IP
-	publicIp.v4().then(ip => {
-	  createContainer(ip, net, dir, isWin);
-	});
+	
+	//If the OS is Windows check to see if the user is logged in
+	if(isWin){
+		//Check to make sure the user is logged in
+		exec("docker login", (err, stdout, stderr) => {
+			//Get the output
+			var str = stdout.toString();
+
+			console.log(`err: ${err}`);
+			console.log(`Stdout: ${stdout}`);
+			console.log(`Stderr: ${stderr}`);
+
+			//Is the user is logged in, create the container
+			if(str.indexOf("Login Succeeded") !== -1){
+				//Get the user's IP and create the container
+				console.log("Docker is logged in");
+				publicIp.v4().then(ip => {
+				  createContainer(ip, net, dir, isWin);
+				});
+			//If the user is not logged in let them know, and quit
+			}else{
+				newNotification("Docker is not logged in. Please login into the Docker application and retry.");
+				console.log("Docker is not logged in");
+				return;
+			}
+		});
+	//Create the container is the OS isn't windows
+	}else{
+		//Get the users public IP
+		publicIp.v4().then(ip => {
+		  createContainer(ip, net, dir, isWin);
+		});
+	}
 }
 
 //Create the docker container
@@ -328,6 +347,7 @@ function createContainer(ip, net, dir, isWin){
 	//Reload the window when completed
 	mainWindow.reload();
 };
+
 
 // Check for updates from bitmark/bitmark-node
 function pullUpdate(){
