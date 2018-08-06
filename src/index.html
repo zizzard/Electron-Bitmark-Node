@@ -52,11 +52,10 @@
         var out = stdout.toString().trim();
         var err = stderr.toString().trim();
 
+        //Check to see if the image doesn't exist, if it doesn't let the user now.
         if(out.indexOf("Error: No such object: bitmark/bitmark-node") !== -1 || err.indexOf("Error: No such object: bitmark/bitmark-node") !== -1 ){
-          console.log("Doesn't exist")
           document.getElementById('main-text').style.display = "block"; ;
         }else{
-          console.log("Exists");
         }
       });
     };
