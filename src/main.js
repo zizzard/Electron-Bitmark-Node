@@ -39,12 +39,6 @@ let mainWindow, prefWindow;
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
 
-	//On application start-up, run containerCheck
-	containerCheck();
-
-	//Ensure settings are initialized on startup
-	settingSetup();
-
 	// Load the previous state with fallback to defaults
 	let mainWindowState = windowStateKeeper({
 	  defaultWidth: 1200,
@@ -83,6 +77,12 @@ app.on('ready', function() {
 	// automatically (the listeners will be removed when the window is closed)
 	// and restore the maximized or full screen state
 	mainWindowState.manage(mainWindow);
+
+	//On application start-up, run containerCheck
+	containerCheck();
+
+	//Ensure settings are initialized on startup
+	settingSetup();
 
 	//Check for check for updates if auto update is on after 2 seconds
 	setTimeout(autoUpdateCheck, 2000);
@@ -164,7 +164,14 @@ function autoUpdateCheck(){
 	const auto_update = settings.get('auto_update');
 	if(auto_update === true){
 		console.log("Checking for updates with auto updater");
-		pullUpdate();
+		//Call pullUpdate and wait for the promise to return the result
+		pullUpdate().then((result) => {
+			//If it is a success (update installed) reload the window
+			console.log('Success', result);
+			mainWindow.reload();
+		}, (error) => {
+			console.log('Error', error)
+		});
 	}
 };
 
@@ -182,8 +189,13 @@ function containerCheck(){
 	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
 	  //If the container is not setup, create it
 	  if (err) {
-	  	createContainerHelper();
-	  	mainWindow.reload();
+	  	//Call container helper and wait for the promise to reload the page on success
+	  	createContainerHelper().then((result) => {
+	  	  console.log('Success', result);
+	  	  mainWindow.reload();
+	  	}, (error) => {
+	  	  console.log('Error', error);
+	  	});
 	  }
 
 	  //If the container is stopped, start it
@@ -198,35 +210,36 @@ function containerCheck(){
 // Start the bitmarkNode Docker container
 function startBitmarkNode(){
 
-	//Get the container status of bitmarkNode
-	exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
-	  //If the container is not setup, create it
-	  if (err) {
-	  	console.log("Failed to start container");
-	  	newNotification("The Docker container is not setup. Please restart the application.");
-	  	return;
-	  }
+	//Return a promise to allow the program to refresh the window on completion
+	return new Promise((resolve, reject) => {
 
-	  //If the container is stopped, start it
-	  var str = stdout.toString().trim();
-	  if(str === "true"){
-	  	console.log("Container already running.");
-	  	newNotification("The Docker container is already running.");
-	  }else{
-	  	//Start the container named bitmarkNode
-	  	exec("docker start bitmarkNode", (err, stdout, stderr) => {
-	  	  if (err) {
-	  	    // node couldn't execute the command
-	  	    console.log("Failed to start container");
-	  	    newNotification("The Docker container has failed to start.");
-	  	    return;
-	  	  }
+		//Get the container status of bitmarkNode
+		exec("docker inspect -f '{{.State.Running}}' bitmarkNode", (err, stdout, stderr) => {
+		  //If the container is not setup, create it
+		  if (err) {
+		  	newNotification("The Docker container is not setup. Please restart the application.");
+		  	reject("Failed to start container");
+		  }
 
-	  	  newNotification("The Docker container has started.");
+		  //If the container is stopped, start it
+		  var str = stdout.toString().trim();
+		  if(str === "true"){
+		  	newNotification("The Docker container is already running.");
+		  	reject("Container already running");
+		  }else{
+		  	//Start the container named bitmarkNode
+		  	exec("docker start bitmarkNode", (err, stdout, stderr) => {
+		  	  if (err) {
+		  	    // node couldn't execute the command
+		  	    newNotification("The Docker container has failed to start.");
+		  	    reject("Failed to start container");
+		  	  }
 
-	  	  console.log(`${stdout}`);
-	  	});
-	  }
+		  	  newNotification("The Docker container has started.");
+		  	  resolve(`${stdout}`);
+		  	});
+		  }
+		});
 	});
 };
 
@@ -240,7 +253,7 @@ function startBitmarkNode_noNotif(){
 	    return;
 	  }
 
-	  console.log(`${stdout}`);
+	  console.log("Container started");
 	  //Reload mainWindow
 	  mainWindow.reload();
 	});
@@ -248,20 +261,23 @@ function startBitmarkNode_noNotif(){
 
 // Stop the bitmarkNode Docker container
 function stopBitmarkNode(){
-	
+
 	newNotification("Stopping the Docker container. This may take some time.");
 
-	//Stop the container named bitmarkNode
-	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
-	  if (err) {
-	    // node couldn't execute the command
-	    console.log("Failed to stop container");
-	    newNotification("The Docker container has failed to stop.");
-	    return;
-	  }
+	//Return a promise to allow the program to refresh the window on completion
+	return new Promise((resolve, reject) => {
 
-	  console.log(`${stdout}`);
-	  newNotification("The Docker container has stopped.");
+		//Stop the container named bitmarkNode
+		exec("docker stop bitmarkNode", (err, stdout, stderr) => {
+		  if (err) {
+		    // node couldn't execute the command
+		    newNotification("The Docker container has failed to stop.");
+		    reject("Failed to stop container.")
+		  }
+
+		  newNotification("The Docker container has stopped.");
+		  resolve('The Docker container has stopped')
+		});
 	});
 };
 
@@ -271,8 +287,15 @@ function createContainerHelper(){
 	const net = settings.get('network');
 	const dir = settings.get('directory');
 	
-	//Pass net dir and isWin to last helper
-	createContainerHelperIPOnly(net, dir, isWin);
+	//Return a promise to allow the program to refresh the window on completion
+	return new Promise((resolve, reject) => {
+		//Pass net dir and isWin to last helper
+		createContainerHelperIPOnly(net, dir, isWin).then((result) => {
+			resolve(result);
+		}, (error) => {
+			reject(error);
+		});
+	});
 }
 
 // Create the container with the network and directory given
@@ -280,86 +303,107 @@ function createContainerHelperIPOnly(net, dir, isWin){
 	var auto_ip = settings.get('auto_ip');
 	var user_ip = settings.get('ip');
 	
-	//If the OS is Windows check to see if the user is logged in
-	if(isWin){
-		//Check to make sure the user is logged in
-		exec("docker login", (err, stdout, stderr) => {
-			//Get the output
-			var str = stdout.toString();
+	//Return a promise to allow the program to refresh the window on completion (passed it to createContainerHelper or local render process function)
+	return new Promise((resolve, reject) => {
+		//If the OS is Windows check to see if the user is logged in
+		if(isWin){
+			//Check to make sure the user is logged in
+			exec("docker login", (err, stdout, stderr) => {
+				//Get the output
+				var str = stdout.toString();
 
-			//Is the user is logged in, create the container
-			if(str.indexOf("Login Succeeded") !== -1){
-				//Get the user's IP and create the container
-				console.log("Docker is logged in");
+				//Is the user is logged in, create the container
+				if(str.indexOf("Login Succeeded") !== -1){
+					//Get the user's IP and create the container
+					console.log("Docker is logged in");
 
-				//Check to see if auto_ip is turned on, if so get it, else use the users defined IP
-				if(auto_ip){
-					publicIp.v4().then(ip => {
-					  createContainer(ip, net, dir, isWin);
-					});
-				}else if(user_ip === 'xxx.xxx.xxx.xxx' || user_ip === '' || user_ip === undefined){
+					//Check to see if auto_ip is turned on, if so get it, else use the users defined IP
+					if(auto_ip){
+						publicIp.v4().then(ip => {
+						  //Get the promise from createContainer and return the result
+						  createContainer(ip, net, dir, isWin).then((result) => {
+						  	resolve(result);
+						  }, (error) => {
+						  	reject(error);
+						  });
+						});
+					//Check to make sure user actually set IP address
+					}else if(user_ip === 'xxx.xxx.xxx.xxx' || user_ip === '' || user_ip === undefined){
 						newNotification("You have turned on manual IP setup, though your IP address is invalid. Please turn on automatic IP setup, or check your manually entered IP address. ")
-						return;
-				} else {
-						createContainer(user_ip, net, dir, isWin);
-				}
+						reject("bad ip");
+					} else {
+						//Get the promise from createContainer and return the result
+						createContainer(user_ip, net, dir, isWin).then((result) => {
+							resolve(result);
+						}, (error) => {
+							reject(error);
+						});
+					}
 
-			//If the user is not logged in let them know, and quit
-			}else{
-				newNotification("Docker is not logged in. Please login into the Docker application and retry.");
-				console.log("Docker is not logged in");
-				return;
-			}
-		});
-	//Create the container is the OS isn't windows
-	}else{
-		//Check to see if auto_ip is turned on, if so get it, else use the users defined IP
-		if(auto_ip){
-			publicIp.v4().then(ip => {
-			  createContainer(ip, net, dir, isWin);
+				//If the user is not logged in let them know, and quit
+				}else{
+					newNotification("Docker is not logged in. Please login into the Docker application and retry.");
+					reject("Docker is not logged in");
+				}
 			});
-		}else if(user_ip === 'xxx.xxx.xxx.xxx' || user_ip === '' || user_ip === undefined){
-				newNotification("You have turned on manual IP setup, though your IP address is invalid. Please turn on automatic IP setup, or check your manually entered IP address. ")
-				return;
-		} else {
-				createContainer(user_ip, net, dir, isWin);
+		//Create the container is the OS isn't windows
+		}else{
+			//Check to see if auto_ip is turned on, if so get it, else use the users defined IP
+			if(auto_ip){
+				publicIp.v4().then(ip => {
+				  //Get the promise from createContainer and return the result
+				  createContainer(ip, net, dir, isWin).then((result) => {
+				  	resolve(result);
+				  }, (error) => {
+				  	reject(error);
+				  });
+				});
+			}else if(user_ip === 'xxx.xxx.xxx.xxx' || user_ip === '' || user_ip === undefined){
+					newNotification("You have turned on manual IP setup, though your IP address is invalid. Please turn on automatic IP setup, or check your manually entered IP address. ")
+					reject("Bad IP address");
+			} else {
+				//Get the promise from createContainer and return the result
+				createContainer(user_ip, net, dir, isWin).then((result) => {
+					resolve(result);
+				}, (error) => {
+					reject(error);
+				});
+			}
 		}
-	}
-}
+	});
+};
 
 //Create the docker container
 function createContainer(ip, net, dir, isWin){
 	//Check to make sure the needed directories exist
 	directoryCheckHelper(dir);
 
-	//Attempt to remove and stop the container before creating the container.
-	exec("docker stop bitmarkNode", (err, stdout, stderr) => {
-		exec("docker rm bitmarkNode", (err, stdout, stderr) => {
+	//Return a promise to allow the program to refresh the window on completion (passed it to createContainerHelperLocalIP)
+	return new Promise((resolve, reject) => {
 
-			//Use the command suited for the platform
-	    	if(isWin){
-	    		//The windows command is the same as the linux command, except with \\ (\\ to delimit the single backslash) instead of /
-	    		console.log("Windows");
-	    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}\\bitmark-node-data\\db:\\.config\\bitmark-node\\db -v ${dir}\\bitmark-node-data\\data:\\.config\\bitmark-node\\bitmarkd\\bitmark\\data -v ${dir}\\bitmark-node-data\\data-test:\\.config\\bitmark-node\\bitmarkd\\testing\\data bitmark/bitmark-node`
-			}else{
-				console.log("Non-Windows");
-	    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
-	    	}
+		//Attempt to remove and stop the container before creating the container.
+		exec("docker stop bitmarkNode", (err, stdout, stderr) => {
+			exec("docker rm bitmarkNode", (err, stdout, stderr) => {
 
-	    	console.log(command)
-	    	
-	    	//Run the command
-	    	exec(command, (err, stdout, stderr) => {
-	    		if (err) {
-	        		console.log("Failed to create container");
-	        		newNotification("The Docker container failed to be created. Ensure you're connected to the Internet and Docker is running properly.");
-	        		return;
-	    		}
+				//Use the command suited for the platform
+		    	if(isWin){
+		    		//The windows command is the same as the linux command, except with \\ (\\ to delimit the single backslash) instead of /
+		    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}\\bitmark-node-data\\db:\\.config\\bitmark-node\\db -v ${dir}\\bitmark-node-data\\data:\\.config\\bitmark-node\\bitmarkd\\bitmark\\data -v ${dir}\\bitmark-node-data\\data-test:\\.config\\bitmark-node\\bitmarkd\\testing\\data bitmark/bitmark-node`
+				}else{
+		    		var command = `docker run -d --name bitmarkNode -p 9980:9980 -p 2136:2136 -p 2130:2130 -e PUBLIC_IP=${ip} -e NETWORK=${net} -v ${dir}/bitmark-node-data/db:/.config/bitmark-node/db -v ${dir}/bitmark-node-data/data:/.config/bitmark-node/bitmarkd/bitmark/data -v ${dir}/bitmark-node-data/data-test:/.config/bitmark-node/bitmarkd/testing/data bitmark/bitmark-node`
+		    	}
+		    	
+		    	//Run the command
+		    	exec(command, (err, stdout, stderr) => {
+		    		if (err) {
+		        		newNotification("The Docker container failed to be created. Ensure you're connected to the Internet and Docker is running properly.");
+		        		reject("Failed to create container");
+		    		}
 
-	    		console.log(`${stdout}`);
-	    		newNotification("The Docker container was created successfully. Please refresh you window.");
-
-	    	});
+		    		newNotification("The Docker container was created successfully.");
+		    		resolve("Created container");
+		    	});
+			});
 		});
 	});
 };
@@ -370,33 +414,42 @@ function pullUpdate(){
 
 	newNotification("Checking for updates. This may take some time.");
 
-	//Pull updates from the docker bitmark-node repo
-	exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
-	  if (err) {
-	    // node couldn't execute the command
-	    console.log("Failed to pull update");
-	    newNotification("There was an error checking for an update. Please check your Internet connection and restart the Docker application.");
-	    return;
-	  }
+	//Return a promise to allow the program to refresh the window on completion
+	return new Promise((resolve, reject) => {
 
-	  //get the output
-	  var str = stdout.toString();
+		//Pull updates from the docker bitmark-node repo
+		exec("docker pull bitmark/bitmark-node", (err, stdout, stderr) => {
+		  if (err) {
+		    // node couldn't execute the command
+		    newNotification("There was an error checking for an update. Please check your Internet connection and restart the Docker application.");
+		    reject("Failed to pull update");
+		  }
 
-	  //Check to see if the up to date text is present
-	  if(str.indexOf("Image is up to date for bitmark/bitmark-node") !== -1){
-	  	console.log("No Updates");
-	  	newNotification("No updates to the Bitmark Node software have been found.");
-	  }
-	  //Check to see if the updated text is present
-	  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node") !== -1){
-	  	console.log("Updated");
-	  	newNotification("The Bitmark Node software has downloaded. Installing updates now.");
-	  	createContainerHelper();
-	  	newNotification("The Bitmark Node software has been updated.");
-	  }else{
-	  	console.log("Unknown update error");
-	  	newNotification("There was an error checking for an update. Please check your Internet connection and restart the Docker application.");
-	  }
+		  //get the output
+		  var str = stdout.toString();
+
+		  //Check to see if the up to date text is present
+		  if(str.indexOf("Image is up to date for bitmark/bitmark-node") !== -1){
+		  	newNotification("No updates to the Bitmark Node software have been found.");
+		  	reject('No updates');
+		  }
+		  //Check to see if the updated text is present
+		  else if(str.indexOf("Downloaded newer image for bitmark/bitmark-node") !== -1){
+		  	console.log("Updated");
+		  	newNotification("The Bitmark Node software has downloaded. Installing updates now.");
+
+		  	//Get the promise from createContainerHelper and return the result
+		  	createContainerHelper().then((result) => {
+		  	  resolve(result);
+		  	  newNotification("The Bitmark Node software has been updated.");
+		  	}, (error) => {
+		  	  resolve(error);
+		  	});
+		  }else{
+		  	newNotification("There was an error checking for an update. Please check your Internet connection and restart the Docker application.");
+		  	reject("Unknown update error.");
+		  }
+		});
 	});
 };
 

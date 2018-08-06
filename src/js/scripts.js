@@ -1,24 +1,108 @@
 const { ipcRenderer, remote } = require('electron');
 
+/* Sidebar Functions */
+
 //Calls startBitmarkNode located in main.js and refreshes the iFrame
 function startBitmarkNodeLocal(){
-	startBitmarkNode();
-	refreshFrame();
+	//Get the promise from startBitmarkNode and refresh the frame
+	startBitmarkNode().then((result) => {
+		console.log('Success', result);
+		refreshFrame();
+	}, (error) => {
+		console.log('Error', error);
+	});
 };
 
 //calls stopBitmarkNode located in main.js
 function stopBitmarkNodeLocal(){
-	stopBitmarkNode();
+
+	//Get the promise from stopBitmarkNode and refresh the frame
+	stopBitmarkNode().then((result) => {
+		console.log('Success', result);
+		refreshFrame();
+	}, (error) => {
+		console.log('Error', error);
+	});
 };
 
 function restartBitmarkNodeLocal(){
-	newNotification("Restarting container. This may take some time.");
-	createContainerHelperLocal();
+  newNotification("Restarting container. This may take some time.");
+
+  //Get the promise from createContainerHelperLocal and refresh the frame
+  createContainerHelperLocal().then((result) => {
+    console.log('Success', result);
+    refreshFrame();
+  }, (error) => {
+    console.log('Error', error);
+  });
 };
 
-//Refreshes the whole window
-function refreshWindow(){
-	remote.getCurrentWindow().reload()
+//Changes the network to Bitmark if it current isn't on it
+function setNetworkBitmarkLocal(){
+	// Fetch the user's preferred network
+	const settings = require('electron').remote.require('electron-settings');
+	var network = settings.get('network');
+
+	//Checks the network
+	if(network === "testing"){
+		//Update network
+		settings.set('network', 'bitmark');
+		console.log("Changing to bitmark");
+		
+		//Lets the user know what is happening
+		newNotification("Changing the network to 'bitmark'. This may take some time.");
+		
+		//Get the promise from createContainerHelperLocal and refresh the frame
+		createContainerHelperLocal().then((result) => {
+		  console.log('Success', result);
+		  refreshFrame();
+		}, (error) => {
+		  console.log('Error', error);
+		});
+	} else {
+		//Let the user know the network is already bitmark
+		console.log("Already on bitmark");
+		newNotification("The network is already set to 'bitmark'.");
+	}
+};
+
+//Changes the network to testing if it current isn't on it
+function setNetworkTestingLocal(){
+	// Fetch the user's preferred network
+	const settings = require('electron').remote.require('electron-settings');
+	var network = settings.get('network');
+
+	//Checks the network
+	if(network === "bitmark"){
+		//Update network
+		settings.set('network', 'testing');
+		console.log("Changing to testing");
+		
+		//Lets the user know what is happening
+		newNotification("Changing the network to 'testing'. This may take some time.");
+		
+		//Get the promise from createContainerHelperLocal and refresh the frame
+		createContainerHelperLocal().then((result) => {
+		  console.log('Success', result);
+		  refreshFrame();
+		}, (error) => {
+		  console.log('Error', error);
+		});
+	} else {
+		//Let the user know the network is already testing
+		console.log("Already on testing");
+		newNotification("The network is already set to 'testing'.");
+	}
+};
+
+function pullUpdateLocal(){
+	//Get the promise from pullUpdate and refresh the frame (a success only occurs when an update is found)
+	pullUpdate().then((result) => {
+		console.log('Success', result);
+		refreshFrame();
+	}, (error) => {
+		console.log('Error', error)
+	});
 };
 
 //Create the preference window
@@ -55,55 +139,8 @@ function refreshFrame() {
    document.getElementsByTagName('iframe')[0].src=document.getElementsByTagName('iframe')[0].src
 };
 
-//Changes the network to Bitmark if it current isn't on it
-function setNetworkBitmark(){
-	// Fetch the user's preferred network
-	const settings = require('electron').remote.require('electron-settings');
-	var network = settings.get('network');
 
-	//Checks the network
-	if(network === "testing"){
-		//Update network
-		settings.set('network', 'bitmark');
-
-		console.log("Changing to bitmark");
-		
-		//Lets the user know what is happening
-		newNotification("Changing the network to 'bitmark'. This may take some time.");
-		
-		//Recreate the container with the new settings
-		createContainerHelperLocal();
-	} else {
-		//Let the user know the network is already bitmark
-		console.log("Already on bitmark");
-		newNotification("The network is already set to 'bitmark'.");
-	}
-};
-
-//Changes the network to testing if it current isn't on it
-function setNetworkTesting(){
-	// Fetch the user's preferred network
-	const settings = require('electron').remote.require('electron-settings');
-	var network = settings.get('network');
-
-	//Checks the network
-	if(network === "bitmark"){
-		//Update network
-		settings.set('network', 'testing');
-
-		console.log("Changing to testing");
-		
-		//Lets the user know what is happening
-		newNotification("Changing the network to 'testing'. This may take some time.");
-		
-		//Recreate the container with the new settings
-		createContainerHelperLocal();
-	} else {
-		//Let the user know the network is already testing
-		console.log("Already on testing");
-		newNotification("The network is already set to 'testing'.");
-	}
-};
+/* Helper Functions */
 
 //Get the network and directory and pass it to the main function to get the IP then create the container
 function createContainerHelperLocal(){
@@ -115,8 +152,14 @@ function createContainerHelperLocal(){
 	//Get if the computer is a windows computer
 	var isWin = remote.getGlobal('process').platform === "win32";
 
-	//If auto ip is turned on, get the users IP address through the package, else pass the users manually entered IP
-	createContainerHelperIPOnly(net, dir, isWin);
+	//Return the promise from createContainerHelperIPOnly to allow the frame to be freshed
+	return new Promise((resolve, reject) => {
+		createContainerHelperIPOnly(net, dir, isWin).then((result) => {
+			resolve(result);
+		}, (error) => {
+			reject(error);
+		});
+	});
 };
 
 //Function to handle buttons
