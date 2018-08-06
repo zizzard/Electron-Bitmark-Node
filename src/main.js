@@ -299,8 +299,11 @@ function createContainerHelperIPOnly(net, dir, isWin){
 					publicIp.v4().then(ip => {
 					  createContainer(ip, net, dir, isWin);
 					});
-				}else{
-					createContainer(user_ip, net, dir, isWin);
+				}else if(user_ip === 'xxx.xxx.xxx.xxx' || user_ip === '' || user_ip === undefined){
+						newNotification("You have turned on manual IP setup, though your IP address is invalid. Please turn on automatic IP setup, or check your manually entered IP address. ")
+						return;
+				} else {
+						createContainer(user_ip, net, dir, isWin);
 				}
 
 			//If the user is not logged in let them know, and quit
@@ -317,8 +320,11 @@ function createContainerHelperIPOnly(net, dir, isWin){
 			publicIp.v4().then(ip => {
 			  createContainer(ip, net, dir, isWin);
 			});
-		}else{
-			createContainer(user_ip, net, dir, isWin);
+		}else if(user_ip === 'xxx.xxx.xxx.xxx' || user_ip === '' || user_ip === undefined){
+				newNotification("You have turned on manual IP setup, though your IP address is invalid. Please turn on automatic IP setup, or check your manually entered IP address. ")
+				return;
+		} else {
+				createContainer(user_ip, net, dir, isWin);
 		}
 	}
 }
