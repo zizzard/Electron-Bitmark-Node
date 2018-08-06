@@ -14,13 +14,11 @@ function stopBitmarkNodeLocal(){
 function restartBitmarkNodeLocal(){
 	newNotification("Restarting container. This may take some time.");
 	createContainerHelperLocal();
-	refreshFrame();
 };
 
 //Refreshes the whole window
 function refreshWindow(){
-	var window = remote.getCurrentWindow();
-	window.reload();
+	remote.getCurrentWindow().reload()
 };
 
 //Create the preference window
