@@ -36,13 +36,31 @@
       <a onClick="createPreferencesWindowLocal();" style="cursor: pointer; cursor: hand;">Show Preferences</a>
       <a onClick="refreshFrame();" style="cursor: pointer; cursor: hand;">Refresh Window</a>
       <hr width="65%">    
+      <a onClick="test();" style="cursor: pointer; cursor: hand;">Refresh Window</a>
       <sub>Bitmark Inc. 2018</sub>
     </div>
     <div id="main" class="main"> 
+
       <iframe src="http://localhost:9980" class="frame"></iframe>
+      <div class="main-text" id="main-text">THE DOCKER CONTAINER IS NOW DOWNLOADING, PLEASE WAIT A MOMENT.</div>
     </div>
   </body>
   <script type="text/javascript">
+    window.onload = function() {
+      exec("docker inspect bitmark/bitmark-node", (err, stdout, stderr) => {
+        //if there is an error, then the image isn't setup
+        var out = stdout.toString().trim();
+        var err = stderr.toString().trim();
+
+        if(out.indexOf("Error: No such object: bitmark/bitmark-node") !== -1 || err.indexOf("Error: No such object: bitmark/bitmark-node") !== -1 ){
+          console.log("Doesn't exist")
+          document.getElementById('main-text').style.display = "block"; ;
+        }else{
+          console.log("Exists");
+        }
+      });
+    };
+
     //Open all external links in browser - Uses JQuery
     let shell = require('electron').shell
     $('iframe').load(function(){
