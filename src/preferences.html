@@ -112,7 +112,7 @@
         var auto_ip = settings.get('auto_ip');
         //Set the radio button to clicked for whatever the current setting is and enable.disable the button/texttbox
         if(auto_ip){
-        	document.getElementById("manual_ip").checked = true;
+        	document.getElementById("automatic_ip").checked = true;
         	document.getElementById("textbox").readOnly = true;
         	document.getElementById("save-button").disabled = true;
         }else{
@@ -128,6 +128,24 @@
 	        textbox.value=ip;
 	    }
     };
+
+    //Captures Update button - Uses JQuery
+    $(document).ready(function(){
+        $('#updateButton').click(function(){
+          //Set update as active and show it, hide ip and about and set as inactive
+          var update = document.getElementById("updateButton");
+          var about = document.getElementById("aboutButton");
+          var ip = document.getElementById("ipButton");
+
+          update.className="active";
+          ip.className="inactive";
+          about.className="inactive";
+
+          $("#update").show();
+          $("#ip").hide();
+          $("#about").hide();
+        });
+    });
 
     //Captures IP button - Uses JQuery
     $(document).ready(function(){
@@ -167,20 +185,20 @@
 
     //Options for mask for IP address
     var options =  { 
-                onKeyPress: function(cep, event, currentField, options){
-                    if(cep){
-                      var ipArray = cep.split(".");
-                      var lastValue = ipArray[ipArray.length-1];
-                      if(lastValue !== "" && parseInt(lastValue) > 255){
-                          ipArray[ipArray.length-1] =  '255';
-                          var resultingValue = ipArray.join(".");
-                          currentField.attr('value',resultingValue);
-                      }
-                }             
-            }};
+        onKeyPress: function(cep, event, currentField, options){
+            if(cep){
+              var ipArray = cep.split(".");
+              var lastValue = ipArray[ipArray.length-1];
+              if(lastValue != "" && parseInt(lastValue) > 255){
+                  ipArray[ipArray.length-1] =  '255';
+                  var resultingValue = ipArray.join(".");
+                  currentField.attr('value',resultingValue);
+              }
+        }             
+    }};
 
-    //Mask the textbox using JQuery
-    $('.textbox').mask("000.000.000.000", options);
+    //Mask the textbox using JQuery - 0 is a required #, 9 is an option #
+    $('.textbox').mask('099.099.099.099', options)
 
 
     //Open all external links in browser - Uses JQuery
