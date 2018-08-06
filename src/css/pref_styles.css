@@ -11,8 +11,8 @@ body {
   font-style: bold;
   color: black;
   display: block;
-  padding-left: 2%;
-  padding-right: 2%;
+  padding-left: 15px;
+  padding-right: 10px;
 }
 
 .header {
@@ -21,8 +21,8 @@ body {
   font-style: normal;
   color: black;
   display: block;
-  padding-left: 2%;
-  padding-right: 2%;
+  padding-left: 15px;
+  padding-right: 10px;
 }
 
 .text {
@@ -31,8 +31,8 @@ body {
   font-style: normal;
   color: black;
   display: block;
-  padding-left: 2%;
-  padding-right: 2%;
+  padding-left: 15px;
+  padding-right: 10px;
   text-decoration: none;
 }
 
@@ -42,8 +42,60 @@ body {
   font-style: light;
   color: #4E4E4E;
   display: block;
-  padding-left: calc(2% + 25px);
-  padding-right: calc(2% + 25px);
+  text-decoration: none; 
+  padding-left: 40px;
+  padding-right: 10px;
+}
+
+.subtext-hidden {
+  font-size: 14px;
+  font-weight: light;
+  font-style: light;
+  color: #4E4E4E;
+  display: block;
+  text-decoration: none; 
+  padding-left: 15px;
+  padding-right: 10px;
+  display:none;
+}
+
+hr.hr-title{
+  border:.75px dashed black;
+  width:calc(100%-5px);
+  margin-left:15px;
+  algin:left;
+}
+
+hr.hr-border{
+  border:.5px dashed grey;
+  width:calc(100%-5px);
+  margin-left:15px;
+  algin:left;
+}
+
+.textbox {
+  font-size: 14px;
+  font-weight: normal;
+  font-style: normal;
+  margin-left: 15px;
+  color: black;
+  display: block;
+  display: inline-block;
+  vertical-align: middle;
+  height:16px;
+}
+
+.save-button {
+  font-family: Avenir; 
+  font-weight: normal; 
+  font-style: normal; 
+  font-size: 16px;
+  color: white; 
+  margin-left: 5px; 
+  background-color: #36454F; 
+  text-align: center; 
+  display: inline-block; 
+  border: none;
 }
 
 .main {

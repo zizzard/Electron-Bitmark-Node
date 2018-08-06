@@ -153,6 +153,8 @@ function newNotification(str){
 function settingSetup(){
 	if(settings.get('network') === undefined){ settings.set('network', 'bitmark'); }
 	if(settings.get('auto_update') === undefined){ settings.set('auto_update', true); }
+	if(settings.get('auto_ip') === undefined){ settings.set('auto_ip', true); }
+	if(settings.get('ip') === undefined){ settings.set('ip', `xxx.xxx.xxx.xxx`); }
 	if(settings.get('directory') === undefined){ settings.set('directory', dataDir); }
 };
 
@@ -277,6 +279,8 @@ function createContainerHelper(){
 
 // Create the container with the network and directory given
 function createContainerHelperIPOnly(net, dir, isWin){
+	var auto_ip = settings.get('auto_ip');
+	var user_ip = settings.get('ip');
 	
 	//If the OS is Windows check to see if the user is logged in
 	if(isWin){
@@ -285,17 +289,20 @@ function createContainerHelperIPOnly(net, dir, isWin){
 			//Get the output
 			var str = stdout.toString();
 
-			console.log(`err: ${err}`);
-			console.log(`Stdout: ${stdout}`);
-			console.log(`Stderr: ${stderr}`);
-
 			//Is the user is logged in, create the container
 			if(str.indexOf("Login Succeeded") !== -1){
 				//Get the user's IP and create the container
 				console.log("Docker is logged in");
-				publicIp.v4().then(ip => {
-				  createContainer(ip, net, dir, isWin);
-				});
+
+				//Check to see if auto_ip is turned on, if so get it, else use the users defined IP
+				if(auto_ip){
+					publicIp.v4().then(ip => {
+					  createContainer(ip, net, dir, isWin);
+					});
+				}else{
+					createContainer(user_ip, net, dir, isWin);
+				}
+
 			//If the user is not logged in let them know, and quit
 			}else{
 				newNotification("Docker is not logged in. Please login into the Docker application and retry.");
@@ -305,10 +312,14 @@ function createContainerHelperIPOnly(net, dir, isWin){
 		});
 	//Create the container is the OS isn't windows
 	}else{
-		//Get the users public IP
-		publicIp.v4().then(ip => {
-		  createContainer(ip, net, dir, isWin);
-		});
+		//Check to see if auto_ip is turned on, if so get it, else use the users defined IP
+		if(auto_ip){
+			publicIp.v4().then(ip => {
+			  createContainer(ip, net, dir, isWin);
+			});
+		}else{
+			createContainer(user_ip, net, dir, isWin);
+		}
 	}
 }
 

@@ -1,15 +1,49 @@
 //When the manual update button is clicked, update the users preferences
-function clickAutomatic(){
+function clickAutomaticUpdate(){
   // Fetch the user's settings and set auto_update to true
 	const settings = require('electron').remote.require('electron-settings');
   settings.set('auto_update', true);
 };
 
 //When the manual update button is clicked, update the users preferences
-function clickManual(){
+function clickManualUpdate(){
   // Fetch the user's settings and set auto_update to false
   const settings = require('electron').remote.require('electron-settings');
   settings.set('auto_update', false);
+};
+
+//When the manual update button is clicked, update the users preferences
+function clickAutomaticIP(){
+  // Fetch the user's settings and set auto_ip to true
+  const settings = require('electron').remote.require('electron-settings');
+  settings.set('auto_ip', true);
+
+  //Disable the textbox and button
+  document.getElementById("textbox").readOnly = true;
+  document.getElementById("save-button").disabled = true;
+};
+
+//When the manual update button is clicked, update the users preferences
+function clickManualIP(){
+  // Fetch the user's settings and set auto_ip to false
+  const settings = require('electron').remote.require('electron-settings');
+  settings.set('auto_ip', false);
+
+  //Enable the textbox and button
+  document.getElementById("textbox").readOnly = false;
+  document.getElementById("save-button").disabled = false;
+};
+
+function savedIP(){
+  //Get the textbox value, and display that on the screen
+  var ip = document.getElementById('textbox').value
+  var saved_text = document.getElementById('saved');
+  saved_text.innerHTML = `Your IP address was set to: ${ip}`;
+  saved_text.style.display = "block";   
+
+  //Update the IP address in settings
+  const settings = require('electron').remote.require('electron-settings');
+  settings.set('ip', ip);
 };
 
 //Function to handle buttons

@@ -111,11 +111,19 @@ function createContainerHelperLocal(){
 	//Get the network and directory from settings
 	const settings = require('electron').remote.require('electron-settings');
 	var net = settings.get('network');
-	var dir = settings.get('directory');;
+	var dir = settings.get('directory');
+	var auto_ip = settings.get('auto_ip');
+	var ip = settings.get('ip');
 
 	//Get if the computer is a windows computer
 	var isWin = remote.getGlobal('process').platform === "win32";
-	var wait = createContainerHelperIPOnly(net, dir, isWin);
+
+	//If auto ip is turned on, get the users IP address through the package, else pass the users manually entered IP
+	if(auto_ip){
+		createContainerHelperIPOnly(net, dir, isWin);
+	}else{
+		createContainer(ip, net, dir, isWin);
+	}
 };
 
 //Function to handle buttons

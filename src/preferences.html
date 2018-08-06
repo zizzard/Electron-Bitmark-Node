@@ -6,6 +6,7 @@
     <script src="main.js"></script>
     <script src="js/pref_scripts.js"></script>
     <script src="js/jquery-1.7.1.js"></script>
+    <script src="js/jquery.mask.js"></script>
     <link rel="stylesheet" type="text/css" href="css/typography.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/pref_styles.css">
@@ -22,43 +23,68 @@
     <div class="sidenavPref">
       <div class="vertical-menu">
         <a href="#" id="updateButton" class="active">Update Settings</a>
+        <a href="#" id="ipButton" class="inactive">IP Address</a>
         <a href="#" id="aboutButton" class="inactive">About</a>
       </div>
     </div>
     <div class="main"> 
       <div id="update">
         <div class="title">UPDATE SETTINGS</div>
-        <hr style="border: .75px dashed black; width:95.5%;">
+        <hr class="hr-title">
         <div class="header">How would you like to check for updates?</div>
         <div id="radio" class="text">
-          <input type="radio" id="automatic" name="update" value="automatic" onchange="clickAutomatic()">
-          <label for="automatic">Automatically check for updates</label>
+          <input type="radio" id="automatic_update" name="update" value="automatic_update" onchange="clickAutomaticUpdate()">
+          <label for="automatic_update">Automatically check for updates</label>
               
           &nbsp;
 
-          <input type="radio" id="manual" name="update" value="manual" onchange="clickManual()">
-          <label for="manual">Manually check for updates</label>
+          <input type="radio" id="manual_update" name="update" value="manual_update" onchange="clickManualUpdate()">
+          <label for="manual_update">Manually check for updates</label>
         </div>
         <div class="subtext">Note: If an update is found, it will be installed automatically</div> 
       </div>
 
+      <div id="ip" hidden="true">
+        <div class="title">IP ADDRESS</div>
+        <hr class="hr-title">
+        <div class="header">How would you like to get your public IP address?</div>
+        <div id="radio" class="text">
+          <input type="radio" id="automatic_ip" name="ip" value="automatic_ip" onchange="clickAutomaticIP()">
+          <label for="automatic_ip">Automatically set IP address</label>
+              
+          &nbsp;
+
+          <input type="radio" id="manual_ip" name="ip" value="manual_ip" onchange="clickManualIP()">
+          <label for="manual_ip">Manually set IP address</label>
+        </div>
+        <div class="subtext">Note: Your public IP address can be found <a href="https://ipinfo.io/ip" base target="_blank" style="color:#4E4E4E">here</a>.</div>
+
+        &nbsp;
+        <div id="ipInput">
+	        <div class="header">Manually Set IP Address</div>
+	        <input type="text" class="textbox" id="textbox" placeholder="xxx.xxx.xxx.xxx" />
+	        <button class="save-button" id="save-button" onclick="savedIP()">Save IP</button>
+      	</div>
+      	<div id="saved" hidden="true" class="subtext-hidden"> Your IP address was set to: </div>
+      </div>
+
       <div id="about" hidden="true">
         <div class="title">ABOUT</div>
-        <hr style="border: .75px dashed black; width:95.5%;">
+        <hr class="hr-title">
         <div class="header">Description</div>
-        <hr style="border: .5px dashed grey; width:95.5%;">
+        <hr class="hr-border">
         <div class="text">The Bitmark node software enables any computer on the Internet to join the Bitmark network as a fully-validating peer. The Bitmark blockchain is an independent chain, optimized for storing property titles, or bitmarks, and does not have its own internal currency (transaction fees are in bitcoin or litecoin). The peer-to-peer network is written in Go and uses the ZeroMQ distributed messaging library. Consensus is secured using the Argon2 hashing algorithm as proof-of-work.</div>
         
         &nbsp;
 
         <div class="header">Container</div>
-        <hr style="border: .5px dashed grey; width:95.5%;">
+        <hr class="hr-border">
         <div class="text">Read more about the Bitmark Node software that allows you to connect to the Bitmark network <a href="https://hub.docker.com/r/bitmark/bitmark-node/" base target="_blank" style="color:black">here</a>.</div>
        
         &nbsp;
 
         <div class="header">Electron</div>
-        <hr style="border: .5px dashed grey; width:95.5%;">
+        <hr class="hr-border">
         <div class="text">Read more about the Electron Framework used to build this application <a href="https://electronjs.org/" base target="_blank" style="color:black">here</a>.</div>
       </div>
     </div>
@@ -67,32 +93,56 @@
 
     //On loading the page, set the preferences
     window.onload = function() {
+    	//Load in settings
+    	const settings = require('electron').remote.require('electron-settings');
+
         // Fetch the auto update settings
-        const settings = require('electron').remote.require('electron-settings');
         var update = settings.get('auto_update');
 
         //Set the radio button to clicked for whatever the current setting is
         if(update){
-          radiobtn = document.getElementById("automatic");
+          radiobtn = document.getElementById("automatic_update");
           radiobtn.checked = true;
         }else{
-          radiobtn = document.getElementById("manual");
+          radiobtn = document.getElementById("manual_update");
           radiobtn.checked = true;
         }
+
+        //Fetch IP address settings
+        var auto_ip = settings.get('auto_ip');
+        //Set the radio button to clicked for whatever the current setting is and enable.disable the button/texttbox
+        if(auto_ip){
+        	document.getElementById("manual_ip").checked = true;
+        	document.getElementById("textbox").readOnly = true;
+        	document.getElementById("save-button").disabled = true;
+        }else{
+        	document.getElementById("manual_ip").checked = true;
+        	document.getElementById("textbox").readOnly = false;
+        	document.getElementById("save-button").disabled = false;
+        }
+
+        //Insert the IP address if it is pre-defined
+        var ip = settings.get('ip');
+        if(ip !== `xxx.xxx.xxx.xxx`){
+	        var textbox = document.getElementById('textbox');
+	        textbox.value=ip;
+	    }
     };
 
-    //Captures update button - Uses JQuery
+    //Captures IP button - Uses JQuery
     $(document).ready(function(){
-        $('#updateButton').click(function(){
-          //Get about and update buttons and set about as inactive, update as active (CSS)
-          var about = document.getElementById("aboutButton");
+        $('#ipButton').click(function(){
+          //Set ip as active and show it, hide update and about and set as inactive
           var update = document.getElementById("updateButton");
+          var about = document.getElementById("aboutButton");
+          var ip = document.getElementById("ipButton");
 
+          update.className="inactive";
+          ip.className="active";
           about.className="inactive";
-          update.className="active";
 
-          //Hides about div and shows update div
-          $("#update").show();
+          $("#update").hide();
+          $("#ip").show();
           $("#about").hide();
         });
     });
@@ -101,17 +151,37 @@
     $(document).ready(function(){
         $('#aboutButton').click(function(){
          //Get about and update buttons and set about as active, update as inactive (CSS)
-          var about = document.getElementById("aboutButton");
           var update = document.getElementById("updateButton");
+          var about = document.getElementById("aboutButton");
+          var ip = document.getElementById("ipButton");
 
-          about.className="active";
           update.className="inactive";
+          ip.className="inactive";
+          about.className="active";
 
-          //Hides update div and shows about div
-          $("#about").show();
           $("#update").hide();
+          $("#ip").hide();
+          $("#about").show();
         });
     });
+
+    //Options for mask for IP address
+    var options =  { 
+                onKeyPress: function(cep, event, currentField, options){
+                    if(cep){
+                      var ipArray = cep.split(".");
+                      var lastValue = ipArray[ipArray.length-1];
+                      if(lastValue !== "" && parseInt(lastValue) > 255){
+                          ipArray[ipArray.length-1] =  '255';
+                          var resultingValue = ipArray.join(".");
+                          currentField.attr('value',resultingValue);
+                      }
+                }             
+            }};
+
+    //Mask the textbox using JQuery
+    $('.textbox').mask("000.000.000.000", options);
+
 
     //Open all external links in browser - Uses JQuery
     let shell = require('electron').shell;
