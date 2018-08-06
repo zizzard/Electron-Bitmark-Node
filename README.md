@@ -1,10 +1,11 @@
+### FOR WINDOWS DOCKER v18.06 IS REQUIRED
+
 # Bitmark-Node User Interface 
 
 [ [Client Setup](#Client-Setup-Introduction) | [Developer Setup](#Developer-Setup) ]
 
 ### Application Screenshot
 ![Application Screenshot](https://i.imgur.com/n0OJz07.png)
-
 
 # Client Setup Introduction
 
@@ -41,7 +42,6 @@ The Bitmark node consists of the following software programs:
 ### 1. Install Docker
 
 The Bitmark node software is distributed as a standalone [Docker container](https://www.docker.com/what-container) which requires you to first install Docker for your operating system:
-
 
 - [Get Docker CE for Mac](https://store.docker.com/editions/community/docker-ce-desktop-mac)
 - [Get Docker CE for Windows](https://store.docker.com/editions/community/docker-ce-desktop-windows)
@@ -168,8 +168,9 @@ After the software update has successfully downloaded, you need need to restart 
 Built using Electron (v2.0.4) and Electron-Forge (v6.0.0-beta.22)
 
 ### Prerequisite
-* Node.js 10.5.0 or newer
-* npm 6.1.0 or newer
+* [Docker v18.06 or newer](https://www.docker.com/get-docker)
+* [Node.js v10.5.0 or newer](https://nodejs.org/en/download/current/)
+* npm v6.1.0 or newer (included with Node.js)
 * [Electron Forge 6.0 or newer](https://github.com/electron-userland/electron-forge)
 
 ### Setup
@@ -193,6 +194,3 @@ To package the application, use:
 ```$ electron-forge make```
 
 <sub>_Creates a package for current OS only_</sub>
-
-
-###### tags: `bitmark` `bitmark-node` `documentation` `run`
