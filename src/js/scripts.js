@@ -14,6 +14,7 @@ function stopBitmarkNodeLocal(){
 function restartBitmarkNodeLocal(){
 	newNotification("Restarting container. This may take some time.");
 	createContainerHelperLocal();
+	refreshFrame();
 };
 
 //Refreshes the whole window
@@ -112,18 +113,12 @@ function createContainerHelperLocal(){
 	const settings = require('electron').remote.require('electron-settings');
 	var net = settings.get('network');
 	var dir = settings.get('directory');
-	var auto_ip = settings.get('auto_ip');
-	var ip = settings.get('ip');
 
 	//Get if the computer is a windows computer
 	var isWin = remote.getGlobal('process').platform === "win32";
 
 	//If auto ip is turned on, get the users IP address through the package, else pass the users manually entered IP
-	if(auto_ip){
-		createContainerHelperIPOnly(net, dir, isWin);
-	}else{
-		createContainer(ip, net, dir, isWin);
-	}
+	createContainerHelperIPOnly(net, dir, isWin);
 };
 
 //Function to handle buttons
