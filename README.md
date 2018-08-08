@@ -87,17 +87,17 @@ This full-sized menu appears once you start the ```bitmarkd``` software.
 * Stop Container
     * If the container is running, this will stop the container. It will do nothing if the container is not setup, or already stopped.
 * Restart Container
-    * This will start the containerif it is not running, or restart the container if it is running. This will apply any updates installed manually.
+    * This will start the container if it is not running, or restart the container if it is running. This will apply any updates installed manually.
 * Switch to Bitmark
-    * If the network is set to 'testing', this will restart the container on the 'bitmark' network. If it is already running on 'bitmark', it will do nothing.
+    * If the current network is 'testing', this will change the container to the 'bitmark' network. If it is already running on 'bitmark', it will do nothing.
 * Switch to Testing
-    * If the network is set to 'bitmark', this will restart the container on the 'testing' network. If it is already running on 'testing', it will do nothing.
+    * If the current network is 'bitmark', this will change the container to the 'testing' network. If it is already running on 'testing', it will do nothing.
 * Check for Updates
-    * Check for updates. If an update is found, it will automatically be installed and the container will restart.
+    * Check for updates to the container. If an update is found, it will automatically be installed and the container will restart.
 * Show Preferences
     * Show the application preferences menu. From here you can manage automatic updates.
 * Refresh Window
-    * Refresh the application window. After initial setup, the container window will not refresh after changes, and must be done manually. 
+    * Refresh the application window.
 
 ### Main Application
 
