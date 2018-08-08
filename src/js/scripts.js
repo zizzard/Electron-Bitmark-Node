@@ -7,7 +7,7 @@ function startBitmarkNodeLocal(){
 	//Get the promise from startBitmarkNode and refresh the frame
 	startBitmarkNode().then((result) => {
 		console.log('Success', result);
-		refreshFrame();
+		setTimeout(refreshFrame, 1000);
 	}, (error) => {
 		console.log('Error', error);
 	});
@@ -19,7 +19,7 @@ function stopBitmarkNodeLocal(){
 	//Get the promise from stopBitmarkNode and refresh the frame
 	stopBitmarkNode().then((result) => {
 		console.log('Success', result);
-		refreshFrame();
+		setTimeout(refreshFrame, 1000);
 	}, (error) => {
 		console.log('Error', error);
 	});
@@ -31,7 +31,8 @@ function restartBitmarkNodeLocal(){
   //Get the promise from createContainerHelperLocal and refresh the frame
   createContainerHelperLocal().then((result) => {
     console.log('Success', result);
-    refreshFrame();
+    console.log('Container Created');
+    setTimeout(refreshFrame, 1000);
   }, (error) => {
     console.log('Error', error);
   });
@@ -55,7 +56,7 @@ function setNetworkBitmarkLocal(){
 		//Get the promise from createContainerHelperLocal and refresh the frame
 		createContainerHelperLocal().then((result) => {
 		  console.log('Success', result);
-		  refreshFrame();
+		  setTimeout(refreshFrame, 1000);
 		}, (error) => {
 		  console.log('Error', error);
 		});
@@ -84,7 +85,7 @@ function setNetworkTestingLocal(){
 		//Get the promise from createContainerHelperLocal and refresh the frame
 		createContainerHelperLocal().then((result) => {
 		  console.log('Success', result);
-		  refreshFrame();
+		  setTimeout(refreshFrame, 1000);
 		}, (error) => {
 		  console.log('Error', error);
 		});
@@ -99,7 +100,7 @@ function pullUpdateLocal(){
 	//Get the promise from pullUpdate and refresh the frame (a success only occurs when an update is found)
 	pullUpdate().then((result) => {
 		console.log('Success', result);
-		refreshFrame();
+		setTimeout(refreshFrame, 1000);
 	}, (error) => {
 		console.log('Error', error)
 	});

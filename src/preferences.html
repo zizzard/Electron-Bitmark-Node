@@ -36,7 +36,7 @@
           <input type="radio" id="automatic_update" name="update" value="automatic_update" onchange="clickAutomaticUpdate()">
           <label for="automatic_update">Automatically check for updates</label>
               
-          &nbsp;
+          <br>
 
           <input type="radio" id="manual_update" name="update" value="manual_update" onchange="clickManualUpdate()">
           <label for="manual_update">Manually check for updates</label>
@@ -52,7 +52,7 @@
           <input type="radio" id="automatic_ip" name="ip" value="automatic_ip" onchange="clickAutomaticIP()">
           <label for="automatic_ip">Automatically set IP address</label>
               
-          &nbsp;
+          <br>
 
           <input type="radio" id="manual_ip" name="ip" value="manual_ip" onchange="clickManualIP()">
           <label for="manual_ip">Manually set IP address</label>
@@ -63,7 +63,7 @@
         <div id="ipInput">
 	        <div class="header">Manually Set IP Address</div>
           <hr class="hr-border">
-          <div class="text">For some networks, the library used to get your public IP address will get the incorrect address. If this occurs, manually enter your IP address.</div>
+          <div class="text">For some networks, the library used to get your public IP address will get the incorrect address. If this occurs, manually enter your IP address. <br>After manually setting your IP address, please click 'Save IP', and restart the Docker container so the change can take effect.</div>
 	        <input type="text" class="textbox" id="textbox" placeholder="xxx.xxx.xxx.xxx" />
 	        <button class="save-button" id="save-button" onclick="savedIP()">Save IP</button>
       	</div>

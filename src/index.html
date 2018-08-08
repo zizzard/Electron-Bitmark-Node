@@ -84,7 +84,21 @@
 
         //Check to see if the image doesn't exist, if it doesn't let the user now.
         if(str.length !== 0){
-          document.getElementById('main-text').style.display = "block"; ;
+
+          exec("docker login", (err, stdout, stderr) => {
+          	//Get the output
+          	var str = stdout.toString();
+          	var isWin = process.platform === "win32";
+
+          	//Is the user is not logged in is on Windows - change text to request login
+          	if(!str.includes("Login Succeeded") && isWin){
+          		console.log("Docker is not logged in");
+          		document.getElementById("main-text").innerHTML="DOCKER IS NOT LOGGED IN, PLEASE LOGIN NOW"; 
+          	}
+
+          	//Display div
+          	document.getElementById('main-text').style.display = "block"; ;
+          });
         }
 
       });
