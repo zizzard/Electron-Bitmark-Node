@@ -80,14 +80,13 @@
     window.onload = function() {
       exec("docker inspect bitmark/bitmark-node", (err, stdout, stderr) => {
         //if there is an error, then the image isn't setup
-        var out = stdout.toString().trim();
-        var err = stderr.toString().trim();
+        var str = stderr.toString().trim();
 
         //Check to see if the image doesn't exist, if it doesn't let the user now.
-        if(out.indexOf("Error: No such object: bitmark/bitmark-node") !== -1 || err.indexOf("Error: No such object: bitmark/bitmark-node") !== -1 ){
+        if(str.length !== 0){
           document.getElementById('main-text').style.display = "block"; ;
-        }else{
         }
+
       });
     };
 
