@@ -200,7 +200,7 @@ function containerCheck(){
 
 	  //If the container is stopped, start it
 	  var str = stdout.toString().trim();
-	  if(str === "false"){
+	  if(str.includes('false')){
 		startBitmarkNode_noNotif();
 		mainWindow.reload();
 	  }
@@ -223,7 +223,7 @@ function startBitmarkNode(){
 
 		  //If the container is stopped, start it
 		  var str = stdout.toString().trim();
-		  if(str === "true"){
+		  if(str.includes('true')){
 		  	newNotification("The Docker container is already running.");
 		  	reject("Container already running");
 		  }else{
