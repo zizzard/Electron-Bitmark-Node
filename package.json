@@ -1,7 +1,7 @@
 {
   "name": "bitmark-node",
   "productName": "bitmark-node",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Bitmark Node User Interface",
   "productDescription": "User interface to view and control the Bitmark Node Docker Container. Read more at bitmark.org.",
   "main": "src/main.js",
