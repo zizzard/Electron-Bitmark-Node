@@ -156,6 +156,7 @@ function settingSetup(){
 	if(settings.get('auto_ip') === undefined){ settings.set('auto_ip', true); }
 	if(settings.get('ip') === undefined){ settings.set('ip', `xxx.xxx.xxx.xxx`); }
 	if(settings.get('directory') === undefined){ settings.set('directory', dataDir); }
+	if(settings.get('action_running') === undefined){ settings.set('action_running', false); }
 };
 
 //Pull update if auto_update is on
@@ -431,6 +432,7 @@ function pullUpdate(){
 		  //Check to see if the up to date text is present
 		  if(str.indexOf("Image is up to date for bitmark/bitmark-node") !== -1){
 		  	newNotification("No updates to the Bitmark Node software have been found.");
+		  	//Rejects because an update was no found, even though there was no error
 		  	reject('No updates');
 		  }
 		  //Check to see if the updated text is present
@@ -443,7 +445,7 @@ function pullUpdate(){
 		  	  resolve(result);
 		  	  newNotification("The Bitmark Node software has been updated.");
 		  	}, (error) => {
-		  	  resolve(error);
+		  	  reject(error);
 		  	});
 		  }else{
 		  	newNotification("There was an error checking for an update. Please check your Internet connection and restart the Docker application.");
